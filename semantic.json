@@ -1,0 +1,21 @@
+{
+  "base": "semantic\\",
+  "paths": {
+    "source": {
+      "config": "src/theme.config",
+      "definitions": "src/definitions/",
+      "site": "src/site/",
+      "themes": "src/themes/"
+    },
+    "output": {
+      "packaged": "../build/semantic/",
+      "uncompressed": "../build/semantic/components/",
+      "compressed": "../build/semantic/components/",
+      "themes": "../build/semantic/themes/"
+    },
+    "clean": "../build/semantic/"
+  },
+  "permission": false,
+  "rtl": false,
+  "version": "2.1.4"
+}

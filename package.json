@@ -52,7 +52,6 @@
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.3.5",
     "map-stream": "0.0.6",
-    "marked": "^0.3.5",
     "pouchdb": "^4.0.3",
     "require-dot-file": "^0.4.0",
     "run-sequence": "^1.1.4",

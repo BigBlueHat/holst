@@ -1,17 +1,27 @@
 /*!
- * # Semantic UI 2.1.4 - Transition
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Transition
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
- * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
  */
 
-;(function ( $, window, document, undefined ) {
+;(function ($, window, document, undefined) {
 
-"use strict";
+'use strict';
+
+$.isFunction = $.isFunction || function(obj) {
+  return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
+
+window = (typeof window != 'undefined' && window.Math == Math)
+  ? window
+  : (typeof self != 'undefined' && self.Math == Math)
+    ? self
+    : Function('return this')()
+;
 
 $.fn.transition = function() {
   var
@@ -25,12 +35,6 @@ $.fn.transition = function() {
     query           = moduleArguments[0],
     queryArguments  = [].slice.call(arguments, 1),
     methodInvoked   = (typeof query === 'string'),
-
-    requestAnimationFrame = window.requestAnimationFrame
-      || window.mozRequestAnimationFrame
-      || window.webkitRequestAnimationFrame
-      || window.msRequestAnimationFrame
-      || function(callback) { setTimeout(callback, 0); },
 
     returnedValue
   ;
@@ -48,9 +52,7 @@ $.fn.transition = function() {
         className,
         metadata,
         animationEnd,
-        animationName,
 
-        namespace,
         moduleNamespace,
         eventNamespace,
         module
@@ -213,6 +215,9 @@ $.fn.transition = function() {
         },
 
         complete: function (event) {
+          if(event && event.target === element) {
+              event.stopPropagation();
+          }
           module.debug('Animation complete', settings.animation);
           module.remove.completeCallback();
           module.remove.failSafe();
@@ -228,7 +233,9 @@ $.fn.transition = function() {
               module.show();
             }
             else {
+              module.verbose('Static animation completed');
               module.restore.conditions();
+              settings.onComplete.call(element);
             }
           }
         },
@@ -237,21 +244,21 @@ $.fn.transition = function() {
           visible: function() {
             var
               style          = $module.attr('style'),
-              userStyle      = module.get.userStyle(),
+              userStyle      = module.get.userStyle(style),
               displayType    = module.get.displayType(),
               overrideStyle  = userStyle + 'display: ' + displayType + ' !important;',
-              currentDisplay = $module.css('display'),
-              emptyStyle     = (style === undefined || style === '')
+              inlineDisplay  = $module[0].style.display,
+              mustStayHidden = !displayType || (inlineDisplay === 'none' && settings.skipInlineHidden) || $module[0].tagName.match(/(script|link|style)/i)
             ;
-            if(currentDisplay !== displayType) {
-              module.verbose('Overriding default display to show element', displayType);
-              $module
-                .attr('style', overrideStyle)
-              ;
+            if (mustStayHidden){
+              module.remove.transition();
+              return false;
             }
-            else if(emptyStyle) {
-              $module.removeAttr('style');
-            }
+            module.verbose('Overriding default display to show element', displayType);
+            $module
+              .attr('style', overrideStyle)
+            ;
+            return true;
           },
           hidden: function() {
             var
@@ -293,34 +300,28 @@ $.fn.transition = function() {
             var
               style = $module.attr('style') || ''
             ;
-            return $.isArray(style.match(/display.*?;/, ''));
+            return Array.isArray(style.match(/display.*?;/, ''));
           }
         },
 
         set: {
           animating: function(animation) {
-            var
-              animationClass,
-              direction
-            ;
             // remove previous callbacks
             module.remove.completeCallback();
 
             // determine exact animation
-            animation      = animation || settings.animation;
-            animationClass = module.get.animationClass(animation);
+            animation = animation || settings.animation;
+            var animationClass = module.get.animationClass(animation);
 
-            // save animation class in cache to restore class names
+              // save animation class in cache to restore class names
             module.save.animation(animationClass);
 
-            // override display if necessary so animation appears visibly
-            module.force.visible();
+            if(module.force.visible()) {
+              module.remove.hidden();
+              module.remove.direction();
 
-            module.remove.hidden();
-            module.remove.direction();
-
-            module.start.animation(animationClass);
-
+              module.start.animation(animationClass);
+            }
           },
           duration: function(animationName, duration) {
             duration = duration || settings.duration;
@@ -492,6 +493,7 @@ $.fn.transition = function() {
           },
           transition: function() {
             $module
+              .removeClass(className.transition)
               .removeClass(className.visible)
               .removeClass(className.hidden)
             ;
@@ -537,7 +539,6 @@ $.fn.transition = function() {
                 animation : animation
               });
             }
-            return $.fn.transition.settings;
           },
           animationClass: function(animation) {
             var
@@ -605,13 +606,22 @@ $.fn.transition = function() {
               : duration
             ;
           },
-          displayType: function() {
+          displayType: function(shouldDetermine) {
+            shouldDetermine = (shouldDetermine !== undefined)
+              ? shouldDetermine
+              : true
+            ;
             if(settings.displayType) {
               return settings.displayType;
             }
-            if($module.data(metadata.displayType) === undefined) {
+            if(shouldDetermine && $module.data(metadata.displayType) === undefined) {
+              var currentDisplay = $module.css('display');
+              if(currentDisplay === '' || currentDisplay === 'none'){
               // create fake element to determine display state
-              module.can.transition(true);
+                module.can.transition(true);
+              } else {
+                module.save.displayType(currentDisplay);
+              }
             }
             return $module.data(metadata.displayType);
           },
@@ -666,13 +676,13 @@ $.fn.transition = function() {
             var
               animation         = settings.animation,
               transitionExists  = module.get.transitionExists(animation),
+              displayType       = module.get.displayType(false),
               elementClass,
               tagName,
               $clone,
               currentAnimation,
               inAnimation,
-              directionExists,
-              displayType
+              directionExists
             ;
             if( transitionExists === undefined || forced) {
               module.verbose('Determining whether animation exists');
@@ -692,16 +702,18 @@ $.fn.transition = function() {
                 .addClass(className.inward)
                 .css('animationName')
               ;
-              displayType = $clone
-                .attr('class', elementClass)
-                .removeAttr('style')
-                .removeClass(className.hidden)
-                .removeClass(className.visible)
-                .show()
-                .css('display')
-              ;
-              module.verbose('Determining final display state', displayType);
-              module.save.displayType(displayType);
+              if(!displayType) {
+                displayType = $clone
+                  .attr('class', elementClass)
+                  .removeAttr('style')
+                  .removeClass(className.hidden)
+                  .removeClass(className.visible)
+                  .show()
+                  .css('display')
+                ;
+                module.verbose('Determining final display state', displayType);
+                module.save.displayType(displayType);
+              }
 
               $clone.remove();
               if(currentAnimation != inAnimation) {
@@ -766,21 +778,33 @@ $.fn.transition = function() {
           element.blur(); // IE will trigger focus change if element is not blurred before hiding
           module.remove.display();
           module.remove.visible();
-          module.set.hidden();
-          module.force.hidden();
-          settings.onHide.call(element);
-          settings.onComplete.call(element);
-          // module.repaint();
+          if($.isFunction(settings.onBeforeHide)){
+            settings.onBeforeHide.call(element,function(){
+                module.hideNow();
+            });
+          } else {
+              module.hideNow();
+          }
+
+        },
+
+        hideNow: function() {
+            module.set.hidden();
+            module.force.hidden();
+            settings.onHide.call(element);
+            settings.onComplete.call(element);
+            // module.repaint();
         },
 
         show: function(display) {
           module.verbose('Showing element', display);
-          module.remove.hidden();
-          module.set.visible();
-          module.force.visible();
-          settings.onShow.call(element);
-          settings.onComplete.call(element);
-          // module.repaint();
+          if(module.force.visible()) {
+            module.remove.hidden();
+            module.set.visible();
+            settings.onShow.call(element);
+            settings.onComplete.call(element);
+            // module.repaint();
+          }
         },
 
         toggle: function() {
@@ -826,7 +850,12 @@ $.fn.transition = function() {
             $.extend(true, settings, name);
           }
           else if(value !== undefined) {
-            settings[name] = value;
+            if($.isPlainObject(settings[name])) {
+              $.extend(true, settings[name], value);
+            }
+            else {
+              settings[name] = value;
+            }
           }
           else {
             return settings[name];
@@ -844,7 +873,7 @@ $.fn.transition = function() {
           }
         },
         debug: function() {
-          if(settings.debug) {
+          if(!settings.silent && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -855,7 +884,7 @@ $.fn.transition = function() {
           }
         },
         verbose: function() {
-          if(settings.verbose && settings.debug) {
+          if(!settings.silent && settings.verbose && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -866,8 +895,10 @@ $.fn.transition = function() {
           }
         },
         error: function() {
-          module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
-          module.error.apply(console, arguments);
+          if(!settings.silent) {
+            module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
+            module.error.apply(console, arguments);
+          }
         },
         performance: {
           log: function(message) {
@@ -967,7 +998,7 @@ $.fn.transition = function() {
             response = found;
           }
 
-          if($.isArray(returnedValue)) {
+          if(Array.isArray(returnedValue)) {
             returnedValue.push(response);
           }
           else if(returnedValue !== undefined) {
@@ -998,6 +1029,9 @@ $.fn.transition.settings = {
 
   // module info
   name          : 'Transition',
+
+  // hide all output from this component regardless of other settings
+  silent        : false,
 
   // debug content outputted to console
   debug         : false,
@@ -1042,6 +1076,9 @@ $.fn.transition.settings = {
   // new animations will occur after previous ones
   queue         : true,
 
+// whether initially inline hidden objects should be skipped for transition
+  skipInlineHidden: false,
+
   metadata : {
     displayType: 'display'
   },
@@ -1060,7 +1097,7 @@ $.fn.transition.settings = {
 
   // possible errors
   error: {
-    noAnimation : 'There is no css animation matching the one you specified. Please make sure your css is vendor prefixed, and you have included transition css.',
+    noAnimation : 'Element is no longer attached to DOM. Unable to animate.  Use silent setting to surpress this warning in production.',
     repeated    : 'That animation is already occurring, cancelling repeated animation',
     method      : 'The method you called is not defined',
     support     : 'This browser does not support CSS animations'
@@ -1069,4 +1106,4 @@ $.fn.transition.settings = {
 };
 
 
-})( jQuery, window , document );
+})( jQuery, window, document );

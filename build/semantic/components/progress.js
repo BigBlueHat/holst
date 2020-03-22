@@ -1,17 +1,27 @@
 /*!
- * # Semantic UI 2.1.4 - Progress
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Progress
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
- * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
  */
 
-;(function ( $, window, document, undefined ) {
+;(function ($, window, document, undefined) {
 
-"use strict";
+'use strict';
+
+$.isFunction = $.isFunction || function(obj) {
+  return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
+
+window = (typeof window != 'undefined' && window.Math == Math)
+  ? window
+  : (typeof self != 'undefined' && self.Math == Math)
+    ? self
+    : Function('return this')()
+;
 
 $.fn.progress = function(parameters) {
   var
@@ -46,8 +56,8 @@ $.fn.progress = function(parameters) {
         moduleNamespace = 'module-' + namespace,
 
         $module         = $(this),
-        $bar            = $(this).find(selector.bar),
-        $progress       = $(this).find(selector.progress),
+        $bars           = $(this).find(selector.bar),
+        $progresses     = $(this).find(selector.progress),
         $label          = $(this).find(selector.label),
 
         element         = this,
@@ -57,14 +67,63 @@ $.fn.progress = function(parameters) {
         transitionEnd,
         module
       ;
-
       module = {
+        helper: {
+          sum: function (nums) {
+            return Array.isArray(nums) ? nums.reduce(function (left, right) {
+              return left + Number(right);
+            }, 0) : 0;
+          },
+          /**
+           * Derive precision for multiple progress with total and values.
+           *
+           * This helper dervices a precision that is sufficiently large to show minimum value of multiple progress.
+           *
+           * Example1
+           * - total: 1122
+           * - values: [325, 111, 74, 612]
+           * - min ratio: 74/1122 = 0.0659...
+           * - required precision:  100
+           *
+           * Example2
+           * - total: 10541
+           * - values: [3235, 1111, 74, 6121]
+           * - min ratio: 74/10541 = 0.0070...
+           * - required precision:   1000
+           *
+           * @param min A minimum value within multiple values
+           * @param total A total amount of multiple values
+           * @returns {number} A precison. Could be 1, 10, 100, ... 1e+10.
+           */
+          derivePrecision: function(min, total) {
+            var precisionPower = 0
+            var precision = 1;
+            var ratio = min / total;
+            while (precisionPower < 10) {
+              ratio = ratio * precision;
+              if (ratio > 1) {
+                break;
+              }
+              precision = Math.pow(10, precisionPower++);
+            }
+            return precision;
+          },
+          forceArray: function (element) {
+            return Array.isArray(element)
+              ? element
+              : !isNaN(element)
+                ? [element]
+                : typeof element == 'string'
+                  ? element.split(',')
+                  : []
+              ;
+          }
+        },
 
         initialize: function() {
-          module.debug('Initializing progress bar', settings);
-
           module.set.duration();
           module.set.transitionEvent();
+          module.debug(element);
 
           module.read.metadata();
           module.read.settings();
@@ -88,12 +147,16 @@ $.fn.progress = function(parameters) {
         },
 
         reset: function() {
-          module.set.percent(0);
+          module.remove.nextValue();
+          module.update.progress(0);
         },
 
-        complete: function() {
+        complete: function(keepState) {
           if(module.percent === undefined || module.percent < 100) {
-            module.set.percent(100);
+            module.remove.progressPoll();
+            if(keepState !== true){
+                module.set.percent(100);
+            }
           }
         },
 
@@ -101,23 +164,23 @@ $.fn.progress = function(parameters) {
           metadata: function() {
             var
               data = {
-                percent : $module.data(metadata.percent),
+                percent : module.helper.forceArray($module.data(metadata.percent)),
                 total   : $module.data(metadata.total),
-                value   : $module.data(metadata.value)
+                value   : module.helper.forceArray($module.data(metadata.value))
               }
             ;
-            if(data.percent) {
-              module.debug('Current percent value set from metadata', data.percent);
-              module.set.percent(data.percent);
-            }
             if(data.total) {
               module.debug('Total value set from metadata', data.total);
               module.set.total(data.total);
             }
-            if(data.value) {
+            if(data.value.length > 0) {
               module.debug('Current value set from metadata', data.value);
               module.set.value(data.value);
               module.set.progress(data.value);
+            }
+            if(data.percent.length > 0) {
+              module.debug('Current percent value set from metadata', data.percent);
+              module.set.percent(data.percent);
             }
           },
           settings: function() {
@@ -137,38 +200,40 @@ $.fn.progress = function(parameters) {
           }
         },
 
+        bind: {
+          transitionEnd: function(callback) {
+            var
+              transitionEnd = module.get.transitionEnd()
+            ;
+            $bars
+              .one(transitionEnd + eventNamespace, function(event) {
+                clearTimeout(module.failSafeTimer);
+                callback.call(this, event);
+              })
+            ;
+            module.failSafeTimer = setTimeout(function() {
+              $bars.triggerHandler(transitionEnd);
+            }, settings.duration + settings.failSafeDelay);
+            module.verbose('Adding fail safe timer', module.timer);
+          }
+        },
+
         increment: function(incrementValue) {
           var
-            maxValue,
             startValue,
             newValue
           ;
           if( module.has.total() ) {
             startValue     = module.get.value();
             incrementValue = incrementValue || 1;
-
-            newValue       = startValue + incrementValue;
-            maxValue       = module.get.total();
-
-            module.debug('Incrementing value', startValue, newValue, maxValue);
-            if(newValue > maxValue ) {
-              module.debug('Value cannot increment above total', maxValue);
-              newValue = maxValue;
-            }
           }
           else {
             startValue     = module.get.percent();
             incrementValue = incrementValue || module.get.randomValue();
-
-            newValue       = startValue + incrementValue;
-            maxValue       = 100;
-
-            module.debug('Incrementing percentage by', startValue, newValue);
-            if(newValue > maxValue ) {
-              module.debug('Value cannot increment above 100 percent');
-              newValue = maxValue;
-            }
           }
+          newValue = startValue + incrementValue;
+          module.debug('Incrementing percentage by', startValue, newValue, incrementValue);
+          newValue = module.get.normalizedValue(newValue);
           module.set.progress(newValue);
         },
         decrement: function(decrementValue) {
@@ -189,28 +254,28 @@ $.fn.progress = function(parameters) {
             newValue       =  startValue - decrementValue;
             module.debug('Decrementing percentage by', decrementValue, startValue);
           }
-
-          if(newValue < 0) {
-            module.debug('Value cannot decrement below 0');
-            newValue = 0;
-          }
+          newValue = module.get.normalizedValue(newValue);
           module.set.progress(newValue);
         },
 
         has: {
+          progressPoll: function() {
+            return module.progressPoll;
+          },
           total: function() {
             return (module.get.total() !== false);
           }
         },
 
         get: {
-          text: function(templateText) {
+          text: function(templateText, index) {
             var
-              value   = module.value                || 0,
-              total   = module.total                || 0,
+              index_  = index || 0,
+              value   = module.get.value(index_),
+              total   = module.total || 0,
               percent = (animating)
-                ? module.get.displayPercent()
-                : module.percent || 0,
+                ? module.get.displayPercent(index_)
+                : module.get.percent(index_),
               left = (module.total > 0)
                 ? (total - value)
                 : (100 - percent)
@@ -221,11 +286,36 @@ $.fn.progress = function(parameters) {
               .replace('{total}', total)
               .replace('{left}', left)
               .replace('{percent}', percent)
+              .replace('{bar}', settings.text.bars[index_] || '')
             ;
-            module.debug('Adding variables to progress bar text', templateText);
+            module.verbose('Adding variables to progress bar text', templateText);
             return templateText;
           },
 
+          normalizedValue: function(value) {
+            if(value < 0) {
+              module.debug('Value cannot decrement below 0');
+              return 0;
+            }
+            if(module.has.total()) {
+              if(value > module.total) {
+                module.debug('Value cannot increment above total', module.total);
+                return module.total;
+              }
+            }
+            else if(value > 100 ) {
+              module.debug('Value cannot increment above 100 percent');
+              return 100;
+            }
+            return value;
+          },
+
+          updateInterval: function() {
+            if(settings.updateInterval == 'auto') {
+              return settings.duration;
+            }
+            return settings.updateInterval;
+          },
 
           randomValue: function() {
             module.debug('Generating random increment percentage');
@@ -260,8 +350,9 @@ $.fn.progress = function(parameters) {
           },
 
           // gets current displayed percentage (if animating values this is the intermediary value)
-          displayPercent: function() {
+          displayPercent: function(index) {
             var
+              $bar           = $($bars[index]),
               barWidth       = $bar.width(),
               totalWidth     = $module.width(),
               minDisplay     = parseInt($bar.css('min-width'), 10),
@@ -272,21 +363,33 @@ $.fn.progress = function(parameters) {
             return (settings.precision > 0)
               ? Math.round(displayPercent * (10 * settings.precision)) / (10 * settings.precision)
               : Math.round(displayPercent)
-            ;
+              ;
           },
 
-          percent: function() {
-            return module.percent || 0;
+          percent: function(index) {
+            return module.percent && module.percent[index || 0] || 0;
           },
-          value: function() {
-            return module.value || 0;
+          value: function(index) {
+            return module.nextValue || module.value && module.value[index || 0] || 0;
           },
           total: function() {
             return module.total || false;
           }
         },
 
+        create: {
+          progressPoll: function() {
+            module.progressPoll = setTimeout(function() {
+              module.update.toNextValue();
+              module.remove.progressPoll();
+            }, module.get.updateInterval());
+          },
+        },
+
         is: {
+          complete: function() {
+            return module.is.success() || module.is.warning() || module.is.error();
+          },
           success: function() {
             return $module.hasClass(className.success);
           },
@@ -305,6 +408,17 @@ $.fn.progress = function(parameters) {
         },
 
         remove: {
+          progressPoll: function() {
+            module.verbose('Removing progress poll timer');
+            if(module.progressPoll) {
+              clearTimeout(module.progressPoll);
+              delete module.progressPoll;
+            }
+          },
+          nextValue: function() {
+            module.verbose('Removing progress value stored for next update');
+            delete module.nextValue;
+          },
           state: function() {
             module.verbose('Removing stored state');
             delete module.total;
@@ -330,21 +444,46 @@ $.fn.progress = function(parameters) {
         },
 
         set: {
-          barWidth: function(value) {
-            if(value > 100) {
-              module.error(error.tooHigh, value);
-            }
-            else if (value < 0) {
-              module.error(error.tooLow, value);
-            }
-            else {
-              $bar
-                .css('width', value + '%')
-              ;
-              $module
-                .attr('data-percent', parseInt(value, 10))
-              ;
-            }
+          barWidth: function(values) {
+            module.debug("set bar width with ", values);
+            values = module.helper.forceArray(values);
+            var firstNonZeroIndex = -1;
+            var lastNonZeroIndex = -1;
+            var valuesSum = module.helper.sum(values);
+            var barCounts = $bars.length;
+            var isMultiple = barCounts > 1;
+            var percents = values.map(function(value, index) {
+              var allZero = (index === barCounts - 1 && valuesSum === 0);
+              var $bar = $($bars[index]);
+              if (value === 0 && isMultiple && !allZero) {
+                $bar.css('display', 'none');
+              } else {
+                if (isMultiple && allZero) {
+                  $bar.css('background', 'transparent');
+                }
+                if (firstNonZeroIndex == -1) {
+                  firstNonZeroIndex = index;
+                }
+                lastNonZeroIndex = index;
+                $bar.css({
+                  display: 'block',
+                  width: value + '%'
+                });
+              }
+              return parseFloat(value);
+            });
+            values.forEach(function(_, index) {
+              var $bar = $($bars[index]);
+              $bar.css({
+                borderTopLeftRadius: index == firstNonZeroIndex ? '' : 0,
+                borderBottomLeftRadius: index == firstNonZeroIndex ? '' : 0,
+                borderTopRightRadius: index == lastNonZeroIndex ? '' : 0,
+                borderBottomRightRadius: index == lastNonZeroIndex ? '' : 0
+              });
+            });
+            $module
+              .attr('data-percent', percents)
+            ;
           },
           duration: function(duration) {
             duration = duration || settings.duration;
@@ -353,41 +492,68 @@ $.fn.progress = function(parameters) {
               : duration
             ;
             module.verbose('Setting progress bar transition duration', duration);
-            $bar
+            $bars
               .css({
                 'transition-duration':  duration
               })
             ;
           },
-          percent: function(percent) {
-            percent = (typeof percent == 'string')
-              ? +(percent.replace('%', ''))
-              : percent
-            ;
-            // round display percentage
-            percent = (settings.precision > 0)
-              ? Math.round(percent * (10 * settings.precision)) / (10 * settings.precision)
-              : Math.round(percent)
-            ;
-            module.percent = percent;
-            if( !module.has.total() ) {
-              module.value = (settings.precision > 0)
-                ? Math.round( (percent / 100) * module.total * (10 * settings.precision)) / (10 * settings.precision)
-                : Math.round( (percent / 100) * module.total * 10) / 10
-              ;
-              if(settings.limitValues) {
-                module.value = (module.value > 100)
-                  ? 100
-                  : (module.value < 0)
-                    ? 0
-                    : module.value
+          percent: function(percents) {
+            percents = module.helper.forceArray(percents).map(function(percent) {
+              return (typeof percent == 'string')
+                ? +(percent.replace('%', ''))
+                : percent
                 ;
+            });
+            var hasTotal = module.has.total();
+            var totalPecent = module.helper.sum(percents);
+            var isMultpleValues = percents.length > 1 && hasTotal;
+            var sumTotal = module.helper.sum(module.helper.forceArray(module.value));
+            if (isMultpleValues && sumTotal > module.total) {
+              // Sum values instead of pecents to avoid precision issues when summing floats
+              module.error(error.sumExceedsTotal, sumTotal, module.total);
+            } else if (!isMultpleValues && totalPecent > 100) {
+              // Sum before rouding since sum of rounded may have error though sum of actual is fine
+              module.error(error.tooHigh, totalPecent);
+            } else if (totalPecent < 0) {
+              module.error(error.tooLow, totalPecent);
+            } else {
+              var autoPrecision = settings.precision > 0
+                ? settings.precision
+                : isMultpleValues
+                  ? module.helper.derivePrecision(Math.min.apply(null, module.value), module.total)
+                  : undefined;
+
+              // round display percentage
+              var roundedPercents = percents.map(function (percent) {
+                return (autoPrecision > 0)
+                  ? Math.round(percent * (10 * autoPrecision)) / (10 * autoPrecision)
+                  : Math.round(percent)
+                  ;
+              });
+              module.percent = roundedPercents;
+              if (!hasTotal) {
+                module.value = roundedPercents.map(function (percent) {
+                  return (autoPrecision > 0)
+                    ? Math.round((percent / 100) * module.total * (10 * autoPrecision)) / (10 * autoPrecision)
+                    : Math.round((percent / 100) * module.total * 10) / 10
+                    ;
+                });
+                if (settings.limitValues) {
+                  module.value = module.value.map(function (value) {
+                    return (value > 100)
+                      ? 100
+                      : (module.value < 0)
+                        ? 0
+                        : module.value;
+                  });
+                }
               }
+              module.set.barWidth(percents);
+              module.set.labelInterval();
+              module.set.labels();
             }
-            module.set.barWidth(percent);
-            module.set.labelInterval();
-            module.set.labels();
-            settings.onChange.call(element, percent, module.value, module.total);
+            settings.onChange.call(element, percents, module.value, module.total);
           },
           labelInterval: function() {
             var
@@ -399,10 +565,18 @@ $.fn.progress = function(parameters) {
               }
             ;
             clearInterval(module.interval);
-            $bar.one(transitionEnd + eventNamespace, animationCallback);
-            module.timer = setTimeout(animationCallback, settings.duration + 100);
+            module.bind.transitionEnd(animationCallback);
             animating = true;
-            module.interval = setInterval(module.set.labels, settings.framerate);
+            module.interval = setInterval(function() {
+              var
+                isInDOM = $.contains(document.documentElement, element)
+              ;
+              if(!isInDOM) {
+                clearInterval(module.interval);
+                animating = false;
+              }
+              module.set.labels();
+            }, settings.framerate);
           },
           labels: function() {
             module.verbose('Setting both bar progress and outer label text');
@@ -413,23 +587,24 @@ $.fn.progress = function(parameters) {
             text = text || '';
             if(text) {
               text = module.get.text(text);
-              module.debug('Setting label to text', text);
+              module.verbose('Setting label to text', text);
               $label.text(text);
             }
           },
           state: function(percent) {
             percent = (percent !== undefined)
               ? percent
-              : module.percent
+              : module.helper.sum(module.percent)
             ;
             if(percent === 100) {
-              if(settings.autoSuccess && !(module.is.warning() || module.is.error())) {
+              if(settings.autoSuccess && $bars.length === 1 && !(module.is.warning() || module.is.error() || module.is.success())) {
                 module.set.success();
                 module.debug('Automatically triggering success at 100%');
               }
               else {
                 module.verbose('Reached 100% removing active state');
                 module.remove.active();
+                module.remove.progressPoll();
               }
             }
             else if(percent > 0) {
@@ -442,17 +617,20 @@ $.fn.progress = function(parameters) {
             }
           },
           barLabel: function(text) {
-            if(text !== undefined) {
-              $progress.text( module.get.text(text) );
-            }
-            else if(settings.label == 'ratio' && module.total) {
-              module.debug('Adding ratio to bar label');
-              $progress.text( module.get.text(settings.text.ratio) );
-            }
-            else if(settings.label == 'percent') {
-              module.debug('Adding percentage to bar label');
-              $progress.text( module.get.text(settings.text.percent) );
-            }
+            $progresses.map(function(index, element){
+              var $progress = $(element);
+              if (text !== undefined) {
+                $progress.text( module.get.text(text, index) );
+              }
+              else if (settings.label == 'ratio' && module.total) {
+                module.verbose('Adding ratio to bar label');
+                $progress.text( module.get.text(settings.text.ratio, index) );
+              }
+              else if (settings.label == 'percent') {
+                module.verbose('Adding percentage to bar label');
+                $progress.text( module.get.text(settings.text.percent, index) );
+              }
+            });
           },
           active: function(text) {
             text = text || settings.text.active;
@@ -463,49 +641,65 @@ $.fn.progress = function(parameters) {
             module.remove.warning();
             module.remove.error();
             module.remove.success();
+            text = settings.onLabelUpdate('active', text, module.value, module.total);
             if(text) {
               module.set.label(text);
             }
-            settings.onActive.call(element, module.value, module.total);
+            module.bind.transitionEnd(function() {
+              settings.onActive.call(element, module.value, module.total);
+            });
           },
-          success : function(text) {
-            text = text || settings.text.success;
+          success : function(text, keepState) {
+            text = text || settings.text.success || settings.text.active;
             module.debug('Setting success state');
             $module.addClass(className.success);
             module.remove.active();
             module.remove.warning();
             module.remove.error();
-            module.complete();
-            if(text) {
+            module.complete(keepState);
+            if(settings.text.success) {
+              text = settings.onLabelUpdate('success', text, module.value, module.total);
               module.set.label(text);
             }
-            settings.onSuccess.call(element, module.total);
+            else {
+              text = settings.onLabelUpdate('active', text, module.value, module.total);
+              module.set.label(text);
+            }
+            module.bind.transitionEnd(function() {
+              settings.onSuccess.call(element, module.total);
+            });
           },
-          warning : function(text) {
+          warning : function(text, keepState) {
             text = text || settings.text.warning;
             module.debug('Setting warning state');
             $module.addClass(className.warning);
             module.remove.active();
             module.remove.success();
             module.remove.error();
-            module.complete();
+            module.complete(keepState);
+            text = settings.onLabelUpdate('warning', text, module.value, module.total);
             if(text) {
               module.set.label(text);
             }
-            settings.onWarning.call(element, module.value, module.total);
+            module.bind.transitionEnd(function() {
+              settings.onWarning.call(element, module.value, module.total);
+            });
           },
-          error : function(text) {
+          error : function(text, keepState) {
             text = text || settings.text.error;
             module.debug('Setting error state');
             $module.addClass(className.error);
             module.remove.active();
             module.remove.success();
             module.remove.warning();
-            module.complete();
+            module.complete(keepState);
+            text = settings.onLabelUpdate('error', text, module.value, module.total);
             if(text) {
               module.set.label(text);
             }
-            settings.onError.call(element, module.value, module.total);
+            module.bind.transitionEnd(function() {
+              settings.onError.call(element, module.value, module.total);
+            });
           },
           transitionEvent: function() {
             transitionEnd = module.get.transitionEnd();
@@ -514,27 +708,60 @@ $.fn.progress = function(parameters) {
             module.total = totalValue;
           },
           value: function(value) {
-            module.value = value;
+            module.value = module.helper.forceArray(value);
           },
           progress: function(value) {
-            var
-              numericValue = module.get.numericValue(value),
-              percentComplete
-            ;
-            if(numericValue === false) {
-              module.error(error.nonNumeric, value);
-            }
-            if( module.has.total() ) {
-              module.set.value(numericValue);
-              percentComplete = (numericValue / module.total) * 100;
-              module.debug('Calculating percent complete from total', percentComplete);
-              module.set.percent( percentComplete );
+            if(!module.has.progressPoll()) {
+              module.debug('First update in progress update interval, immediately updating', value);
+              module.update.progress(value);
+              module.create.progressPoll();
             }
             else {
-              percentComplete = numericValue;
-              module.debug('Setting value to exact percentage value', percentComplete);
-              module.set.percent( percentComplete );
+              module.debug('Updated within interval, setting next update to use new value', value);
+              module.set.nextValue(value);
             }
+          },
+          nextValue: function(value) {
+            module.nextValue = value;
+          }
+        },
+
+        update: {
+          toNextValue: function() {
+            var
+              nextValue = module.nextValue
+            ;
+            if(nextValue) {
+              module.debug('Update interval complete using last updated value', nextValue);
+              module.update.progress(nextValue);
+              module.remove.nextValue();
+            }
+          },
+          progress: function(values) {
+            var hasTotal = module.has.total();
+            if (hasTotal) {
+              module.set.value(values);
+            }
+            var percentCompletes = module.helper.forceArray(values).map(function(value) {
+              var
+                percentComplete
+              ;
+              value = module.get.numericValue(value);
+              if (value === false) {
+                module.error(error.nonNumeric, value);
+              }
+              value = module.get.normalizedValue(value);
+              if (hasTotal) {
+                percentComplete = (value / module.total) * 100;
+                module.debug('Calculating percent complete from total', percentComplete);
+              }
+              else {
+                percentComplete = value;
+                module.debug('Setting value to exact percentage value', percentComplete);
+              }
+              return percentComplete;
+            });
+            module.set.percent( percentCompletes );
           }
         },
 
@@ -544,7 +771,12 @@ $.fn.progress = function(parameters) {
             $.extend(true, settings, name);
           }
           else if(value !== undefined) {
-            settings[name] = value;
+            if($.isPlainObject(settings[name])) {
+              $.extend(true, settings[name], value);
+            }
+            else {
+              settings[name] = value;
+            }
           }
           else {
             return settings[name];
@@ -562,7 +794,7 @@ $.fn.progress = function(parameters) {
           }
         },
         debug: function() {
-          if(settings.debug) {
+          if(!settings.silent && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -573,7 +805,7 @@ $.fn.progress = function(parameters) {
           }
         },
         verbose: function() {
-          if(settings.verbose && settings.debug) {
+          if(!settings.silent && settings.verbose && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -584,8 +816,10 @@ $.fn.progress = function(parameters) {
           }
         },
         error: function() {
-          module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
-          module.error.apply(console, arguments);
+          if(!settings.silent) {
+            module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
+            module.error.apply(console, arguments);
+          }
         },
         performance: {
           log: function(message) {
@@ -681,7 +915,7 @@ $.fn.progress = function(parameters) {
           else if(found !== undefined) {
             response = found;
           }
-          if($.isArray(returnedValue)) {
+          if(Array.isArray(returnedValue)) {
             returnedValue.push(response);
           }
           else if(returnedValue !== undefined) {
@@ -720,6 +954,7 @@ $.fn.progress.settings = {
   name         : 'Progress',
   namespace    : 'progress',
 
+  silent       : false,
   debug        : false,
   verbose      : false,
   performance  : true,
@@ -729,31 +964,40 @@ $.fn.progress.settings = {
     max : 5
   },
 
-  duration     : 300,
+  duration       : 300,
 
-  autoSuccess  : true,
-  showActivity : true,
-  limitValues  : true,
+  updateInterval : 'auto',
 
-  label        : 'percent',
-  precision    : 0,
-  framerate    : (1000 / 30), /// 30 fps
+  autoSuccess    : true,
+  showActivity   : true,
+  limitValues    : true,
 
-  percent      : false,
-  total        : false,
-  value        : false,
+  label          : 'percent',
+  precision      : 0,
+  framerate      : (1000 / 30), /// 30 fps
 
-  onChange     : function(percent, value, total){},
-  onSuccess    : function(total){},
-  onActive     : function(value, total){},
-  onError      : function(value, total){},
-  onWarning    : function(value, total){},
+  percent        : false,
+  total          : false,
+  value          : false,
+
+  // delay in ms for fail safe animation callback
+  failSafeDelay : 100,
+
+  onLabelUpdate : function(state, text, value, total){
+    return text;
+  },
+  onChange      : function(percent, value, total){},
+  onSuccess     : function(total){},
+  onActive      : function(value, total){},
+  onError       : function(value, total){},
+  onWarning     : function(value, total){},
 
   error    : {
-    method     : 'The method you called is not defined.',
-    nonNumeric : 'Progress value is non numeric',
-    tooHigh    : 'Value specified is above 100%',
-    tooLow     : 'Value specified is below 0%'
+    method          : 'The method you called is not defined.',
+    nonNumeric      : 'Progress value is non numeric',
+    tooHigh         : 'Value specified is above 100%',
+    tooLow          : 'Value specified is below 0%',
+    sumExceedsTotal : 'Sum of multple values exceed total',
   },
 
   regExp: {
@@ -778,7 +1022,8 @@ $.fn.progress.settings = {
     success : false,
     warning : false,
     percent : '{percent}%',
-    ratio   : '{value} of {total}'
+    ratio   : '{value} of {total}',
+    bars    : ['']
   },
 
   className : {
@@ -791,4 +1036,4 @@ $.fn.progress.settings = {
 };
 
 
-})( jQuery, window , document );
+})( jQuery, window, document );

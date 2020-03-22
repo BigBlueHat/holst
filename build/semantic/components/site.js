@@ -1,14 +1,18 @@
 /*!
- * # Semantic UI 2.1.4 - Site
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Site
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
- * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
  */
-;(function ( $, window, document, undefined ) {
+
+;(function ($, window, document, undefined) {
+
+$.isFunction = $.isFunction || function(obj) {
+    return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
 
 $.site = $.fn.site = function(parameters) {
   var
@@ -26,7 +30,6 @@ $.site = $.fn.site = function(parameters) {
     namespace       = settings.namespace,
     error           = settings.error,
 
-    eventNamespace  = '.' + namespace,
     moduleNamespace = 'module-' + namespace,
 
     $document       = $(document),
@@ -391,7 +394,7 @@ $.site = $.fn.site = function(parameters) {
       else if(found !== undefined) {
         response = found;
       }
-      if($.isArray(returnedValue)) {
+      if(Array.isArray(returnedValue)) {
         returnedValue.push(response);
       }
       else if(returnedValue !== undefined) {
@@ -439,6 +442,7 @@ $.site.settings = {
   modules: [
     'accordion',
     'api',
+    'calendar',
     'checkbox',
     'dimmer',
     'dropdown',
@@ -447,15 +451,17 @@ $.site.settings = {
     'modal',
     'nag',
     'popup',
+    'slider',
     'rating',
     'shape',
     'sidebar',
     'state',
     'sticky',
     'tab',
+    'toast',
     'transition',
-    'visit',
-    'visibility'
+    'visibility',
+    'visit'
   ],
 
   siteNamespace   : 'site',
@@ -484,4 +490,4 @@ $.extend($.expr[ ":" ], {
 });
 
 
-})( jQuery, window , document );
+})( jQuery, window, document );

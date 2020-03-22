@@ -1,9 +1,8 @@
 /*!
- * # Semantic UI 2.1.4 - Accordion
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Accordion
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
- * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
@@ -11,7 +10,18 @@
 
 ;(function ($, window, document, undefined) {
 
-"use strict";
+'use strict';
+
+$.isFunction = $.isFunction || function(obj) {
+  return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
+
+window = (typeof window != 'undefined' && window.Math == Math)
+  ? window
+  : (typeof self != 'undefined' && self.Math == Math)
+    ? self
+    : Function('return this')()
+;
 
 $.fn.accordion = function(parameters) {
   var
@@ -23,12 +33,6 @@ $.fn.accordion = function(parameters) {
     query           = arguments[0],
     methodInvoked   = (typeof query == 'string'),
     queryArguments  = [].slice.call(arguments, 1),
-
-    requestAnimationFrame = window.requestAnimationFrame
-      || window.mozRequestAnimationFrame
-      || window.webkitRequestAnimationFrame
-      || window.msRequestAnimationFrame
-      || function(callback) { setTimeout(callback, 0); },
 
     returnedValue
   ;
@@ -163,6 +167,7 @@ $.fn.accordion = function(parameters) {
           }
           module.debug('Opening accordion content', $activeTitle);
           settings.onOpening.call($activeContent);
+          settings.onChanging.call($activeContent);
           if(settings.exclusive) {
             module.closeOthers.call($activeTitle);
           }
@@ -178,12 +183,16 @@ $.fn.accordion = function(parameters) {
               $activeContent
                 .children()
                   .transition({
-                    animation   : 'fade in',
-                    queue       : false,
-                    useFailSafe : true,
-                    debug       : settings.debug,
-                    verbose     : settings.verbose,
-                    duration    : settings.duration
+                    animation        : 'fade in',
+                    queue            : false,
+                    useFailSafe      : true,
+                    debug            : settings.debug,
+                    verbose          : settings.verbose,
+                    duration         : settings.duration,
+                    skipInlineHidden : true,
+                    onComplete: function() {
+                      $activeContent.children().removeClass(className.transition);
+                    }
                   })
               ;
             }
@@ -226,6 +235,7 @@ $.fn.accordion = function(parameters) {
           if((isActive || isOpening) && !isClosing) {
             module.debug('Closing accordion content', $activeContent);
             settings.onClosing.call($activeContent);
+            settings.onChanging.call($activeContent);
             $activeTitle
               .removeClass(className.active)
             ;
@@ -238,12 +248,13 @@ $.fn.accordion = function(parameters) {
                 $activeContent
                   .children()
                     .transition({
-                      animation   : 'fade out',
-                      queue       : false,
-                      useFailSafe : true,
-                      debug       : settings.debug,
-                      verbose     : settings.verbose,
-                      duration    : settings.duration
+                      animation        : 'fade out',
+                      queue            : false,
+                      useFailSafe      : true,
+                      debug            : settings.debug,
+                      verbose          : settings.verbose,
+                      duration         : settings.duration,
+                      skipInlineHidden : true
                     })
                 ;
               }
@@ -308,11 +319,12 @@ $.fn.accordion = function(parameters) {
                 $openContents
                   .children()
                     .transition({
-                      animation   : 'fade out',
-                      useFailSafe : true,
-                      debug       : settings.debug,
-                      verbose     : settings.verbose,
-                      duration    : settings.duration
+                      animation        : 'fade out',
+                      useFailSafe      : true,
+                      debug            : settings.debug,
+                      verbose          : settings.verbose,
+                      duration         : settings.duration,
+                      skipInlineHidden : true
                     })
                 ;
               }
@@ -367,7 +379,12 @@ $.fn.accordion = function(parameters) {
             $.extend(true, settings, name);
           }
           else if(value !== undefined) {
-            settings[name] = value;
+            if($.isPlainObject(settings[name])) {
+              $.extend(true, settings[name], value);
+            }
+            else {
+              settings[name] = value;
+            }
           }
           else {
             return settings[name];
@@ -388,7 +405,7 @@ $.fn.accordion = function(parameters) {
           }
         },
         debug: function() {
-          if(settings.debug) {
+          if(!settings.silent && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -399,7 +416,7 @@ $.fn.accordion = function(parameters) {
           }
         },
         verbose: function() {
-          if(settings.verbose && settings.debug) {
+          if(!settings.silent && settings.verbose && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -410,8 +427,10 @@ $.fn.accordion = function(parameters) {
           }
         },
         error: function() {
-          module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
-          module.error.apply(console, arguments);
+          if(!settings.silent) {
+            module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
+            module.error.apply(console, arguments);
+          }
         },
         performance: {
           log: function(message) {
@@ -507,7 +526,7 @@ $.fn.accordion = function(parameters) {
           else if(found !== undefined) {
             response = found;
           }
-          if($.isArray(returnedValue)) {
+          if(Array.isArray(returnedValue)) {
             returnedValue.push(response);
           }
           else if(returnedValue !== undefined) {
@@ -544,6 +563,7 @@ $.fn.accordion.settings = {
   name            : 'Accordion',
   namespace       : 'accordion',
 
+  silent          : false,
   debug           : false,
   verbose         : false,
   performance     : true,
@@ -560,10 +580,11 @@ $.fn.accordion.settings = {
   duration        : 350, // duration of animation
   easing          : 'easeOutQuad', // easing equation for animation
 
-
   onOpening       : function(){}, // callback before open animation
-  onOpen          : function(){}, // callback after open animation
   onClosing       : function(){}, // callback before closing animation
+  onChanging      : function(){}, // callback before closing or opening animation
+
+  onOpen          : function(){}, // callback after open animation
   onClose         : function(){}, // callback after closing animation
   onChange        : function(){}, // callback after closing or opening animation
 
@@ -573,7 +594,8 @@ $.fn.accordion.settings = {
 
   className   : {
     active    : 'active',
-    animating : 'animating'
+    animating : 'animating',
+    transition: 'transition'
   },
 
   selector    : {
@@ -592,5 +614,5 @@ $.extend( $.easing, {
   }
 });
 
-})( jQuery, window , document );
+})( jQuery, window, document );
 

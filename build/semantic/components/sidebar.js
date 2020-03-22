@@ -1,17 +1,27 @@
 /*!
- * # Semantic UI 2.1.4 - Sidebar
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Sidebar
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
- * Copyright 2015 Contributors
  * Released under the MIT license
  * http://opensource.org/licenses/MIT
  *
  */
 
-;(function ( $, window, document, undefined ) {
+;(function ($, window, document, undefined) {
 
-"use strict";
+'use strict';
+
+$.isFunction = $.isFunction || function(obj) {
+  return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
+
+window = (typeof window != 'undefined' && window.Math == Math)
+  ? window
+  : (typeof self != 'undefined' && self.Math == Math)
+    ? self
+    : Function('return this')()
+;
 
 $.fn.sidebar = function(parameters) {
   var
@@ -83,10 +93,6 @@ $.fn.sidebar = function(parameters) {
 
           transitionEvent = module.get.transitionEvent();
 
-          if(module.is.ios()) {
-            module.set.ios();
-          }
-
           // avoids locking rendering if initialized in onReady
           if(settings.delaySetup) {
             requestAnimationFrame(module.setup.layout);
@@ -135,17 +141,19 @@ $.fn.sidebar = function(parameters) {
 
         event: {
           clickaway: function(event) {
-            var
-              clickedInPusher = ($pusher.find(event.target).length > 0 || $pusher.is(event.target)),
-              clickedContext  = ($context.is(event.target))
-            ;
-            if(clickedInPusher) {
-              module.verbose('User clicked on dimmed page');
-              module.hide();
-            }
-            if(clickedContext) {
-              module.verbose('User clicked on dimmable context (scaled out page)');
-              module.hide();
+            if(settings.closable){
+              var
+                clickedInPusher = ($pusher.find(event.target).length > 0 || $pusher.is(event.target)),
+                clickedContext  = ($context.is(event.target))
+              ;
+              if(clickedInPusher) {
+                module.verbose('User clicked on dimmed page');
+                module.hide();
+              }
+              if(clickedContext) {
+                module.verbose('User clicked on dimmable context (scaled out page)');
+                module.hide();
+              }
             }
           },
           touch: function(event) {
@@ -169,12 +177,10 @@ $.fn.sidebar = function(parameters) {
         bind: {
           clickaway: function() {
             module.verbose('Adding clickaway events to context', $context);
-            if(settings.closable) {
-              $context
-                .on('click'    + elementNamespace, module.event.clickaway)
-                .on('touchend' + elementNamespace, module.event.clickaway)
-              ;
-            }
+            $context
+              .on('click'    + elementNamespace, module.event.clickaway)
+              .on('touchend' + elementNamespace, module.event.clickaway)
+            ;
           },
           scrollLock: function() {
             if(settings.scrollLock) {
@@ -273,8 +279,8 @@ $.fn.sidebar = function(parameters) {
               style += ''
                 + ' body.pushable > .ui.visible.left.sidebar ~ .ui.visible.right.sidebar ~ .pusher:after,'
                 + ' body.pushable > .ui.visible.right.sidebar ~ .ui.visible.left.sidebar ~ .pusher:after {'
-                + '   -webkit-transform: translate3d(0px, 0, 0);'
-                + '           transform: translate3d(0px, 0, 0);'
+                + '   -webkit-transform: translate3d(0, 0, 0);'
+                + '           transform: translate3d(0, 0, 0);'
                 + ' }'
               ;
             }
@@ -312,8 +318,7 @@ $.fn.sidebar = function(parameters) {
           cache: function() {
             module.cache = {
               width  : $module.outerWidth(),
-              height : $module.outerHeight(),
-              rtl    : ($module.css('direction') == 'rtl')
+              height : $module.outerHeight()
             };
           },
           layout: function() {
@@ -563,6 +568,7 @@ $.fn.sidebar = function(parameters) {
         set: {
 
           // ios only (scroll on html not document). This prevent auto-resize canvas/scroll in ios
+          // (This is no longer necessary in latest iOS)
           ios: function() {
             $html.addClass(className.ios);
           },
@@ -754,7 +760,7 @@ $.fn.sidebar = function(parameters) {
           },
           rtl: function () {
             if(module.cache.rtl === undefined) {
-              module.cache.rtl = ($module.css('direction') == 'rtl');
+              module.cache.rtl = $module.attr('dir') === 'rtl' || $module.css('direction') === 'rtl';
             }
             return module.cache.rtl;
           }
@@ -766,7 +772,12 @@ $.fn.sidebar = function(parameters) {
             $.extend(true, settings, name);
           }
           else if(value !== undefined) {
-            settings[name] = value;
+            if($.isPlainObject(settings[name])) {
+              $.extend(true, settings[name], value);
+            }
+            else {
+              settings[name] = value;
+            }
           }
           else {
             return settings[name];
@@ -784,7 +795,7 @@ $.fn.sidebar = function(parameters) {
           }
         },
         debug: function() {
-          if(settings.debug) {
+          if(!settings.silent && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -795,7 +806,7 @@ $.fn.sidebar = function(parameters) {
           }
         },
         verbose: function() {
-          if(settings.verbose && settings.debug) {
+          if(!settings.silent && settings.verbose && settings.debug) {
             if(settings.performance) {
               module.performance.log(arguments);
             }
@@ -806,8 +817,10 @@ $.fn.sidebar = function(parameters) {
           }
         },
         error: function() {
-          module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
-          module.error.apply(console, arguments);
+          if(!settings.silent) {
+            module.error = Function.prototype.bind.call(console.error, console, settings.name + ':');
+            module.error.apply(console, arguments);
+          }
         },
         performance: {
           log: function(message) {
@@ -903,7 +916,7 @@ $.fn.sidebar = function(parameters) {
           else if(found !== undefined) {
             response = found;
           }
-          if($.isArray(returnedValue)) {
+          if(Array.isArray(returnedValue)) {
             returnedValue.push(response);
           }
           else if(returnedValue !== undefined) {
@@ -942,6 +955,7 @@ $.fn.sidebar.settings = {
   name              : 'Sidebar',
   namespace         : 'sidebar',
 
+  silent            : false,
   debug             : false,
   verbose           : false,
   performance       : true,
@@ -1019,4 +1033,4 @@ $.fn.sidebar.settings = {
 };
 
 
-})( jQuery, window , document );
+})( jQuery, window, document );

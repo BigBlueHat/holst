@@ -1,4 +1,3 @@
-var marked = require('marked');
 var PouchDB = require('pouchdb');
 var Vue = require('vue');
 Vue.config.debug = true;

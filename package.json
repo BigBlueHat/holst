@@ -6,6 +6,7 @@
   "scripts": {
     "styles": "cp -R node_modules/fomantic-ui-css/* build/semantic/.",
     "build": "browserify -e src/main.js -o build/bundle.js",
+    "serve": "http-server build/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "browserify": "^16.5.0",
-    "fomantic-ui-css": "^2.8.4"
+    "fomantic-ui-css": "^2.8.4",
+    "http-server": "^0.12.1"
   }
 }

@@ -15,19 +15,13 @@ The `build` folder should contain an up-to-date static copy of Holst
 $ npm install
 $ npm run styles # if this is your first time or you're updating Semantic-UI
 $ npm run build
+$ npm run serve
 ```
 
-Open the `build/index.html` file in your browser either via `File | Open...` or
-by running a web server (i.e. `cd build && python -m SimpleHTTPServer`).
-
-**Note:** PouchDB databases are unique to the URL you load it from, so if
-you start using this at `file:///.../build/index.html` and then open it at
-`http://localhost:8000/` you'll be using two *different* databases. That's
-where the sync bit comes in. :wink:
+Open `http://localhost:8080/`. You can then enter the URL of your PouchDB or
+CouchDB database in the header and get to work!
 
 ### Ugh...CORS...
-
-Sadly, this section might wake you back up...sorry...
 
 ```
 $ npm install -g add-cors-to-couchdb

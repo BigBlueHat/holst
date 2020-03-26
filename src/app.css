@@ -1,0 +1,20 @@
+#app .pusher {
+  height: 100%;
+}
+#app .pusher > .grid {
+  height: 100%;
+}
+
+.menu .item {
+  cursor: pointer;
+}
+
+.menu .item > a:first-child {
+  display: block;
+}
+
+#editor {
+  min-height: 50%;
+  background: #f6f6f6;
+  border: none;
+}

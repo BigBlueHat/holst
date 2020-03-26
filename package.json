@@ -7,7 +7,8 @@
     "styles": "cp -R node_modules/fomantic-ui-css/* build/semantic/.",
     "build": "browserify -e src/main.js -o build/bundle.js && cp src/*.html build/ && cp src/*.css build/",
     "serve": "http-server build/",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,10 @@
   },
   "devDependencies": {
     "browserify": "^16.5.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-vue": "^7.0.0-alpha.0",
     "fomantic-ui-css": "^2.8.4",
     "http-server": "^0.12.1"
   }

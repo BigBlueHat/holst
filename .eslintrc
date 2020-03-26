@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "airbnb-base",
+    "plugin:vue/vue3-recommended"
+  ],
+  "rules": {
+    "linebreak-style": "off",
+    "comma-dangle": ["error", "only-multiline"],
+    "no-alert": "off",
+    "no-console": ["error", { "allow": ["info", "warn", "error"] }],
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-underscore-dangle": ["error", { "allow": ["_id", "_rev"] }]
+  }
+}

@@ -23,6 +23,19 @@ window.app = new Vue({
     confirmDelete: false,
     showSyncForm: false
   },
+  computed: {
+    auth() {
+      if (this.remote.user !== '' && this.remote.password !== '') {
+        return {
+          auth: {
+            user: this.remote.user,
+            password: this.remote.password
+          }
+        };
+      }
+      return {};
+    }
+  },
   created() {
     this.listDocs();
   },
@@ -96,19 +109,15 @@ window.app = new Vue({
     syncTo() {
       const self = this;
       // TODO: maybe do some validation or something
-      const remote = new PouchDB(self.remote.url, {
-        auth: {
-          user: self.remote.user,
-          password: self.remote.password
-        }
-      });
-      PouchDB.sync(db, remote)
+      const remote = new PouchDB(self.remote.url, this.auth);
+      db.sync(remote)
         .on('complete', (info) => {
           console.info('sync info', info);
           alert('woot!');
           self.showSyncForm = false;
           self.listDocs();
-        });
+        })
+        .on('error', console.error);
     }
-  }
+  },
 });

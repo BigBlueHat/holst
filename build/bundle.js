@@ -24352,8 +24352,13 @@ window.app = new Vue({
       }
       return {};
     },
-    jsonDoc() {
-      return JSON.stringify(this.doc, null, '  ');
+    jsonDoc: {
+      get() {
+        return JSON.stringify(this.doc, null, '  ');
+      },
+      set(value) {
+        this.doc = JSON.parse(value);
+      }
     }
   },
   created() {
@@ -24406,9 +24411,16 @@ window.app = new Vue({
         });
     },
     saveDoc(e) {
+      const self = this;
       e.preventDefault();
-      this.doc.updated = (new Date()).toISOString();
-      db.put(this.doc);
+      self.doc.updated = (new Date()).toISOString();
+      db.put(self.doc)
+        .then((resp) => {
+          if (resp.ok) {
+            // TODO: not sure why revs is an array...
+            self.ids[resp.id].revs = [resp.rev];
+          }
+        });
       // TODO: handle errors and stuff
     },
     deleteDoc(e) {

@@ -54,15 +54,17 @@
           <div class="menu" v-if="$key == doc._id">
             <a class="item" v-for="rev in item.revs">{{rev}}</a>
           </div>
-          <div class="ui mini buttons segment"
+          <div class="ui right aligned container"
             v-if="$key == doc._id">
-            <a class="ui basic red icon button"
+            <a class="ui basic negative icon mini button"
                :href="$key" title="delete this note"
                v-on:click="deleteDoc" v-on:blur="confirmDelete = false">
               <i class="ui trash icon"></i>
               <span v-if="!confirmDelete">delete</span>
               <span v-if="confirmDelete">are you sure?</span>
             </a>
+            <a class="ui positive mini button"
+              v-on:click="saveDoc">save</a>
           </div>
         </div>
     </div>

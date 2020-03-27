@@ -10,6 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/"
   },
+  "browser": {
+    "vue": "vue/dist/vue.common.js"
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/BigBlueHat/pillow-notes"
@@ -28,7 +31,7 @@
   "homepage": "https://github.com/BigBlueHat/pillow-notes",
   "dependencies": {
     "pouchdb": "^7.0.0",
-    "vue": "^0.12.15"
+    "vue": "^2.5.0"
   },
   "devDependencies": {
     "browserify": "^16.5.0",

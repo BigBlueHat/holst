@@ -10,13 +10,15 @@
     <link rel="stylesheet" href="semantic/semantic.min.css" />
     <link rel="stylesheet" href="app.css" />
   </head>
-  <body id="app" class="pushable">
+  <body class="pushable">
+
+    <main id="app">
 
     <div class="ui top push visible sidebar inverted main menu">
       <div class="item">Holst</div>
       <div class="item">
         <div class="ui mini input">
-          <input type="text" v-model="url" v-on="keyup: setDBUrl | key 'enter'"
+          <input type="text" v-model="url" v-on:keyup.enter="setDBUrl"
           placeholder="http://localhost:5984/..." />
         </div>
       </div>
@@ -25,7 +27,7 @@
         <div class="item">
           <!-- sync form toggle button -->
           <div class="ui green icon button"
-            v-on="click: showSyncForm = true">
+            v-on:click="showSyncForm = true">
             <i class="random icon"></i> Sync
           </div>
         </div>
@@ -42,21 +44,21 @@
           <div class="ui transparent icon input">
             <input placeholder="new doc name" type="text"
               v-model="new_doc_name"
-              v-on="keyup: newDoc | key 'enter'" />
-            <i class="plus link icon" v-on="click: newDoc"></i>
+              v-on:keyup.enter="newDoc" />
+            <i class="plus link icon" v-on:click="newDoc"></i>
           </div>
         </div>
-        <div class="item" v-repeat="ids" v-class="active: $key == doc._id"
-          v-on="click: loadDoc($event, $key)">
-          <a href="{{$key}}">{{$key}}</a>
+        <div class="item" v-for="(item, $key) in ids" :class="{ active: $key == doc._id }"
+          v-on:click="loadDoc($event, $key)">
+          <a :href="$key">{{$key}}</a>
           <div class="menu" v-if="$key == doc._id">
-            <a class="item" v-repeat="revs">{{$value}}</a>
+            <a class="item" v-for="rev in item.revs">{{rev}}</a>
           </div>
           <div class="ui mini buttons segment"
             v-if="$key == doc._id">
             <a class="ui basic red icon button"
-               href="{{$key}}" title="delete this note"
-               v-on="click: deleteDoc, blur: confirmDelete = false">
+               :href="$key" title="delete this note"
+               v-on:click="deleteDoc" v-on:blur="confirmDelete = false">
               <i class="ui trash icon"></i>
               <span v-if="!confirmDelete">delete</span>
               <span v-if="confirmDelete">are you sure?</span>
@@ -69,14 +71,14 @@
       <div class="ui internally celled grid">
         <div class="stretched row">
           <textarea id="editor" class="sixteen wide column"
-            v-model="doc | json"></textarea>
+            v-model="jsonDoc"></textarea>
         </div>
       </div>
     </div>
 
     <!-- sync form -->
-    <div class="ui dimmer modals page transition" v-class="visible: showSyncForm, active: showSyncForm" v-style="showSyncForm ? 'display: flex !important' : ''">
-      <div class="ui small modal transition active scrolling" v-class="visible: showSyncForm, active: showSyncForm">
+    <div class="ui dimmer modals page transition" :class="{ visible: showSyncForm, active: showSyncForm }" :style="showSyncFormStyles">
+      <div class="ui small modal transition active scrolling" :class="{ visible: showSyncForm, active: showSyncForm }">
         <div class="content">
           <div class="ui form">
             <div class="fields">
@@ -103,15 +105,17 @@
         </div>
         <div class="actions">
           <div class="ui cancel icon button"
-            v-on="click: showSyncForm = false">
+            v-on:click="showSyncForm = false">
             <i class="close icon"></i> Cancel
           </div>
-          <button class="ui positive icon button" v-on="click: syncTo">
+          <button class="ui positive icon button" v-on:click="syncTo">
             <i class="random icon"></i> Sync
           </button>
         </div>
       </div>
     </div>
+
+    </main>
 
     <!-- app -->
     <script src="bundle.js"></script>

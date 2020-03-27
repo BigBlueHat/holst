@@ -7,7 +7,12 @@ let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
 
 window.app = new Vue({
-  el: document.body,
+  el: '#app',
+  filters: {
+    json(value) {
+      return JSON.parse(value, null, '  ');
+    }
+  },
   data: {
     new_doc_name: '',
     url: '',
@@ -34,6 +39,9 @@ window.app = new Vue({
         };
       }
       return {};
+    },
+    jsonDoc() {
+      return JSON.stringify(this.doc, null, '  ');
     }
   },
   created() {
@@ -118,6 +126,9 @@ window.app = new Vue({
           self.listDocs();
         })
         .on('error', console.error);
+    },
+    showSyncFormStyles() {
+      return this.showSyncForm ? 'display: flex !important' : '';
     }
-  },
+  }
 });

@@ -1,4 +1,4 @@
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-browser');
 const Vue = require('vue');
 
 Vue.config.debug = true;

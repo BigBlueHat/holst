@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/BigBlueHat/pillow-notes",
   "dependencies": {
-    "pouchdb": "^7.0.0",
+    "pouchdb-browser": "^7.0.0",
     "vue": "^2.5.0"
   },
   "devDependencies": {

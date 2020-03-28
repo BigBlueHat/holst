@@ -24758,7 +24758,6 @@ window.app = new Vue({
     deleteDoc() {
       db.remove(this.doc);
       // TODO: handle errors
-      this.confirmDelete = false;
       this.doc = {
         _id: ''
       };

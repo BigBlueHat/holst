@@ -48,32 +48,23 @@
             <i class="plus link icon" v-on:click="newDoc"></i>
           </div>
         </div>
-        <div class="item" v-for="(item, $key) in ids" :class="{ active: $key == doc._id }"
-          v-on:click="loadDoc($event, $key)">
-          <a :href="$key">{{$key}}</a>
-          <div class="menu" v-if="$key == doc._id">
-            <a class="item" v-for="rev in item.revs">{{rev}}</a>
-          </div>
-          <div class="ui right aligned container"
-            v-if="$key == doc._id">
-            <a class="ui basic negative icon mini button"
-               :href="$key" title="delete this note"
-               v-on:click="deleteDoc" v-on:blur="confirmDelete = false">
-              <i class="ui trash icon"></i>
-              <span v-if="!confirmDelete">delete</span>
-              <span v-if="confirmDelete">are you sure?</span>
-            </a>
-            <a class="ui positive mini button"
-              v-on:click="saveDoc">save</a>
-          </div>
-        </div>
+
+        <doc-link
+          v-for="(item, $key) in ids"
+          :key="$key"
+          :id="$key"
+          :item="item"
+          :current="doc"
+          @deleting="deleteDoc"
+          @loading="loadDoc"
+          @saving="saveDoc"></doc-link>
     </div>
 
     <div class="pusher">
       <div class="ui internally celled grid">
         <div class="stretched row">
           <textarea id="editor" class="sixteen wide column"
-            v-model="jsonDoc"></textarea>
+            v-model.lazy="jsonDoc"></textarea>
         </div>
       </div>
     </div>

@@ -3,6 +3,8 @@ const Vue = require('vue');
 
 Vue.config.debug = true;
 
+const DocLink = require('./DocLink.vue');
+
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
 
@@ -12,6 +14,9 @@ window.app = new Vue({
     json(value) {
       return JSON.parse(value, null, '  ');
     }
+  },
+  components: {
+    DocLink
   },
   data: {
     new_doc_name: '',
@@ -25,7 +30,6 @@ window.app = new Vue({
       username: '',
       password: ''
     },
-    confirmDelete: false,
     showSyncForm: false
   },
   computed: {
@@ -71,15 +75,17 @@ window.app = new Vue({
     newDoc() {
       const self = this;
       if (self.new_doc_name !== '') {
-        self.doc._id = self.new_doc_name;
+        self.doc = {
+          _id: self.new_doc_name
+        };
         // save the doc immediately
         db.put(self.doc)
           .then((resp) => {
-            const doc = {};
-            // store the rev, so we can PUT the update later
-            doc._rev = resp.rev;
-            // make the new doc the current doc
-            self.doc = doc;
+            // store the _id & _rev, so we can PUT the update later
+            self.doc = {
+              _id: resp.id,
+              _rev: resp.rev
+            };
             // reset the new doc value for future use
             self.new_doc_name = '';
             // reload the list of docs
@@ -90,17 +96,15 @@ window.app = new Vue({
         alert('Documents need names...sorry.');
       }
     },
-    loadDoc(e, id) {
-      e.preventDefault();
+    loadDoc(id) {
       const self = this;
       db.get(id)
         .then((doc) => {
           self.doc = doc;
         });
     },
-    saveDoc(e) {
+    saveDoc() {
       const self = this;
-      e.preventDefault();
       self.doc.updated = (new Date()).toISOString();
       db.put(self.doc)
         .then((resp) => {
@@ -111,20 +115,14 @@ window.app = new Vue({
         });
       // TODO: handle errors and stuff
     },
-    deleteDoc(e) {
-      e.preventDefault();
-      if (this.confirmDelete) {
-        db.remove(this.doc);
-        // TODO: handle errors
-        this.confirmDelete = false;
-        this.doc = {
-          _id: '',
-          markdown: ''
-        };
-        this.listDocs();
-      } else {
-        this.confirmDelete = true;
-      }
+    deleteDoc() {
+      db.remove(this.doc);
+      // TODO: handle errors
+      this.confirmDelete = false;
+      this.doc = {
+        _id: ''
+      };
+      this.listDocs();
     },
     syncTo() {
       const self = this;

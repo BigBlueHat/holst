@@ -24,7 +24,7 @@
     "vue.js"
   ],
   "author": "BigBlueHat <byoung@bigbluehat.com>",
-  "license": "Apache License 2.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/BigBlueHat/pillow-notes/issues"
   },

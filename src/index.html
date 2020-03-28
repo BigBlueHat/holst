@@ -61,6 +61,14 @@
     </div>
 
     <div class="pusher">
+      <div class="ui top attached fitted segment" style="margin-top: 0.5em">
+        <table class="ui celled table" style="border: 0">
+          <tr>
+            <td class="collapsing">{{ doc._id }}</td>
+            <td class="disabled">{{ doc._rev }}</td>
+          </tr>
+        </table>
+      </div>
       <div class="ui internally celled grid">
         <div class="stretched row">
           <textarea id="editor" class="sixteen wide column"

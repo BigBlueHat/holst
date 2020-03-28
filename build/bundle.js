@@ -10916,8 +10916,6 @@ PouchDB.plugin(IDBPouch)
   .plugin(mapreduce)
   .plugin(replication);
 
-// Pull from src because pouchdb-node/pouchdb-browser themselves
-
 module.exports = PouchDB;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
@@ -24617,12 +24615,50 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   }
 })()}
 },{"vue":16,"vue-hot-reload-api":14}],20:[function(require,module,exports){
-const PouchDB = require('pouchdb');
+;(function(){
+
+module.exports = {
+  props: {
+    show: Boolean
+  },
+  data() {
+    return {
+      username: '',
+      password: '',
+      url: ''
+    };
+  },
+  methods: {
+    showStyles() {
+      return this.show ? 'display: flex !important' : '';
+    }
+  }
+};
+
+})()
+if (module.exports.__esModule) module.exports = module.exports.default
+var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
+if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ui dimmer modals page transition",class:{ visible: _vm.show, active: _vm.show },style:(_vm.showStyles)},[_c('div',{staticClass:"ui small modal transition active scrolling",class:{ visible: _vm.show, active: _vm.show }},[_c('div',{staticClass:"content"},[_c('div',{staticClass:"ui form"},[_c('div',{staticClass:"fields"},[_c('div',{staticClass:"four wide field"},[_c('label',[_vm._v("Username")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.username),expression:"username"}],attrs:{"type":"text","placeholder":"username"},domProps:{"value":(_vm.username)},on:{"input":function($event){if($event.target.composing){ return; }_vm.username=$event.target.value}}})]),_vm._v(" "),_c('div',{staticClass:"four wide field"},[_c('label',[_vm._v("Password")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.password),expression:"password"}],attrs:{"type":"password","placeholder":"password"},domProps:{"value":(_vm.password)},on:{"input":function($event){if($event.target.composing){ return; }_vm.password=$event.target.value}}})]),_vm._v(" "),_c('div',{staticClass:"eight wide field"},[_c('label',[_vm._v("CouchDB or PouchDB URL")]),_vm._v(" "),_c('div',{staticClass:"ui input"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.url),expression:"url"}],attrs:{"type":"text","placeholder":"https://example.com/database"},domProps:{"value":(_vm.url)},on:{"input":function($event){if($event.target.composing){ return; }_vm.url=$event.target.value}}})])])])])]),_vm._v(" "),_c('div',{staticClass:"actions"},[_c('div',{staticClass:"ui cancel icon button",on:{"click":function($event){return _vm.$emit('hiding')}}},[_c('i',{staticClass:"close icon"}),_vm._v(" Cancel\n      ")]),_vm._v(" "),_c('button',{staticClass:"ui positive icon button",on:{"click":function($event){return _vm.$emit('syncing', { url: _vm.url, username: _vm.username, password: _vm.password })}}},[_c('i',{staticClass:"random icon"}),_vm._v(" Sync\n      ")])])])])}
+__vue__options__.staticRenderFns = []
+if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-7034ff46", __vue__options__)
+  } else {
+    hotAPI.reload("data-v-7034ff46", __vue__options__)
+  }
+})()}
+},{"vue":16,"vue-hot-reload-api":14}],21:[function(require,module,exports){
+const PouchDB = require('pouchdb-browser');
 const Vue = require('vue');
 
 Vue.config.debug = true;
 
 const DocLink = require('./DocLink.vue');
+const SyncModal = require('./SyncModal.vue');
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -24635,7 +24671,8 @@ window.app = new Vue({
     }
   },
   components: {
-    DocLink
+    DocLink,
+    SyncModal
   },
   data: {
     new_doc_name: '',
@@ -24644,25 +24681,9 @@ window.app = new Vue({
       _id: ''
     },
     ids: {},
-    remote: {
-      url: '',
-      username: '',
-      password: ''
-    },
     showSyncForm: false
   },
   computed: {
-    auth() {
-      if (this.remote.user !== '' && this.remote.password !== '') {
-        return {
-          auth: {
-            user: this.remote.user,
-            password: this.remote.password
-          }
-        };
-      }
-      return {};
-    },
     jsonDoc: {
       get() {
         return JSON.stringify(this.doc, null, '  ');
@@ -24743,10 +24764,19 @@ window.app = new Vue({
       };
       this.listDocs();
     },
-    syncTo() {
+    syncTo(opts) {
       const self = this;
+      const auth = (opts.user !== '' && opts.password !== '')
+        ? {
+          auth: {
+            user: this.remote.user,
+            password: this.remote.password
+          }
+        }
+        : {};
+
       // TODO: maybe do some validation or something
-      const remote = new PouchDB(self.remote.url, this.auth);
+      const remote = new PouchDB(opts.url, auth);
       db.sync(remote)
         .on('complete', (info) => {
           console.info('sync info', info);
@@ -24755,11 +24785,8 @@ window.app = new Vue({
           self.listDocs();
         })
         .on('error', console.error);
-    },
-    showSyncFormStyles() {
-      return this.showSyncForm ? 'display: flex !important' : '';
     }
   }
 });
 
-},{"./DocLink.vue":19,"pouchdb":5,"vue":16}]},{},[20]);
+},{"./DocLink.vue":19,"./SyncModal.vue":20,"pouchdb-browser":5,"vue":16}]},{},[21]);

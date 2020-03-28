@@ -4,6 +4,7 @@ const Vue = require('vue');
 Vue.config.debug = true;
 
 const DocLink = require('./DocLink.vue');
+const SyncModal = require('./SyncModal.vue');
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -16,7 +17,8 @@ window.app = new Vue({
     }
   },
   components: {
-    DocLink
+    DocLink,
+    SyncModal
   },
   data: {
     new_doc_name: '',
@@ -25,25 +27,9 @@ window.app = new Vue({
       _id: ''
     },
     ids: {},
-    remote: {
-      url: '',
-      username: '',
-      password: ''
-    },
     showSyncForm: false
   },
   computed: {
-    auth() {
-      if (this.remote.user !== '' && this.remote.password !== '') {
-        return {
-          auth: {
-            user: this.remote.user,
-            password: this.remote.password
-          }
-        };
-      }
-      return {};
-    },
     jsonDoc: {
       get() {
         return JSON.stringify(this.doc, null, '  ');
@@ -124,10 +110,19 @@ window.app = new Vue({
       };
       this.listDocs();
     },
-    syncTo() {
+    syncTo(opts) {
       const self = this;
+      const auth = (opts.user !== '' && opts.password !== '')
+        ? {
+          auth: {
+            user: this.remote.user,
+            password: this.remote.password
+          }
+        }
+        : {};
+
       // TODO: maybe do some validation or something
-      const remote = new PouchDB(self.remote.url, this.auth);
+      const remote = new PouchDB(opts.url, auth);
       db.sync(remote)
         .on('complete', (info) => {
           console.info('sync info', info);
@@ -136,9 +131,6 @@ window.app = new Vue({
           self.listDocs();
         })
         .on('error', console.error);
-    },
-    showSyncFormStyles() {
-      return this.showSyncForm ? 'display: flex !important' : '';
     }
   }
 });

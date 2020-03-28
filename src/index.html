@@ -70,43 +70,7 @@
     </div>
 
     <!-- sync form -->
-    <div class="ui dimmer modals page transition" :class="{ visible: showSyncForm, active: showSyncForm }" :style="showSyncFormStyles">
-      <div class="ui small modal transition active scrolling" :class="{ visible: showSyncForm, active: showSyncForm }">
-        <div class="content">
-          <div class="ui form">
-            <div class="fields">
-              <div class="four wide field">
-                <label>Username</label>
-                <input type="text" placeholder="username"
-                  v-model="remote.username" />
-              </div>
-              <div class="four wide field">
-                <label>Password</label>
-                <input type="password" placeholder="password"
-                  v-model="remote.password" />
-              </div>
-              <div class="eight wide field">
-                <label>CouchDB or PouchDB URL</label>
-                <div class="ui input">
-                  <input type="text"
-                    placeholder="https://example.com/database"
-                    v-model="remote.url" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="actions">
-          <div class="ui cancel icon button"
-            v-on:click="showSyncForm = false">
-            <i class="close icon"></i> Cancel
-          </div>
-          <button class="ui positive icon button" v-on:click="syncTo">
-            <i class="random icon"></i> Sync
-          </button>
-        </div>
-      </div>
-    </div>
+    <sync-modal :show="showSyncForm" @syncing="syncTo" @hiding="showSyncForm = false"></sync-modal>
 
     </main>
 

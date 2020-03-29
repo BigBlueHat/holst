@@ -30,12 +30,21 @@ window.app = new Vue({
     showSyncForm: false
   },
   computed: {
-    jsonDoc: {
+    editableDoc: {
       get() {
-        return JSON.stringify(this.doc, null, '  ');
+        // TODO: consider making the app always work with a "cleaned" doc
+        const temp = JSON.parse(JSON.stringify(this.doc));
+        // remove _id/_rev as they are "locked"
+        delete temp._id;
+        delete temp._rev;
+        return JSON.stringify(temp, null, '  ');
       },
       set(value) {
-        this.doc = JSON.parse(value);
+        const temp = JSON.parse(value);
+        // put _id/_rev back
+        temp._id = this.doc._id;
+        temp._rev = this.doc._rev;
+        this.doc = temp;
       }
     }
   },

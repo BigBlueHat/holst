@@ -24672,7 +24672,14 @@ window.app = new Vue({
   },
   components: {
     DocLink,
-    SyncModal
+    SyncModal,
+    TextareaEditor: {
+      props: ['value'],
+      template: `<textarea
+        :value="value"
+        @input="$emit('input', $event.target.value)"
+      ></textarea>`
+    }
   },
   data: {
     new_doc_name: '',
@@ -24684,6 +24691,9 @@ window.app = new Vue({
     showSyncForm: false
   },
   computed: {
+    docEditor() {
+      return 'TextareaEditor';
+    },
     editableDoc: {
       get() {
         // TODO: consider making the app always work with a "cleaned" doc

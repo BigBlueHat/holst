@@ -71,8 +71,11 @@
       </div>
       <div class="ui internally celled grid">
         <div class="stretched row">
-          <textarea id="editor" class="sixteen wide column"
-            v-model.lazy="editableDoc"></textarea>
+          <component
+            :is="docEditor"
+            v-model.lazy="editableDoc"
+            id="editor" class="sixteen wide column"
+          ></component>
         </div>
       </div>
     </div>

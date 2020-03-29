@@ -22,9 +22,19 @@ window.app = new Vue({
     TextareaEditor: {
       props: ['value'],
       template: `<textarea
-        :value="value"
-        @input="$emit('input', $event.target.value)"
-      ></textarea>`
+        :value="JSON.stringify(value, null, '  ')"
+        @input="saving"
+      ></textarea>`,
+      methods: {
+        saving($event) {
+          try {
+            this.$emit('input', JSON.parse($event.target.value));
+          } catch (e) {
+            // ignore JSON.parse error...because it'll be happening constantly
+            // TODO: consider listening for a "save" event from parent instead
+          }
+        }
+      }
     }
   },
   data: {
@@ -47,10 +57,10 @@ window.app = new Vue({
         // remove _id/_rev as they are "locked"
         delete temp._id;
         delete temp._rev;
-        return JSON.stringify(temp, null, '  ');
+        return temp;
       },
       set(value) {
-        const temp = JSON.parse(value);
+        const temp = value;
         // put _id/_rev back
         temp._id = this.doc._id;
         temp._rev = this.doc._rev;

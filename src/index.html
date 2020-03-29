@@ -50,10 +50,10 @@
         </div>
 
         <doc-link
-          v-for="(item, $key) in ids"
-          :key="$key"
-          :id="$key"
-          :item="item"
+          v-for="(rev, id) in ids"
+          :key="id"
+          :id="id"
+          :rev="rev"
           :current="doc"
           @deleting="deleteDoc"
           @loading="loadDoc"

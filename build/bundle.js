@@ -24588,8 +24588,8 @@ exports.parse = function (str) {
 module.exports = {
   props: {
     id: String,
+    rev: String,
     current: Object,
-    item: Object
   },
   data() {
     return {
@@ -24602,7 +24602,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"item",class:{ active: _vm.id === _vm.current._id },on:{"click":function($event){$event.preventDefault();return _vm.$emit('loading', _vm.id)}}},[_c('a',{attrs:{"href":_vm.id}},[_vm._v(_vm._s(_vm.id))]),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"menu"},_vm._l((_vm.item.revs),function(rev){return _c('a',{key:rev,staticClass:"item"},[_vm._v(_vm._s(rev))])}),0):_vm._e(),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"ui right aligned container"},[_c('a',{staticClass:"ui basic negative icon mini button",attrs:{"href":_vm.id,"title":"delete this note"},on:{"click":function($event){$event.preventDefault();_vm.confirmDelete ? _vm.$emit('deleting', _vm.id) : _vm.confirmDelete = true},"blur":function($event){_vm.confirmDelete = false}}},[_c('i',{staticClass:"ui trash icon"}),_vm._v(" "),(!_vm.confirmDelete)?_c('span',[_vm._v("delete")]):_vm._e(),_vm._v(" "),(_vm.confirmDelete)?_c('span',[_vm._v("are you sure?")]):_vm._e()]),_vm._v(" "),_c('a',{staticClass:"ui positive mini button",on:{"click":function($event){$event.preventDefault();return _vm.$emit('saving')}}},[_vm._v("save")])]):_vm._e()])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"item",class:{ active: _vm.id === _vm.current._id },on:{"click":function($event){$event.preventDefault();return _vm.$emit('loading', _vm.id)}}},[_c('a',{attrs:{"href":_vm.id}},[_vm._v(_vm._s(_vm.id))]),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"menu"},[_c('a',{staticClass:"item",staticStyle:{"white-space":"nowrap"}},[_vm._v(_vm._s(_vm.rev))])]):_vm._e(),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"ui right aligned container"},[_c('a',{staticClass:"ui basic negative icon mini button",attrs:{"href":_vm.id,"title":"delete this note"},on:{"click":function($event){$event.preventDefault();_vm.confirmDelete ? _vm.$emit('deleting', _vm.id) : _vm.confirmDelete = true},"blur":function($event){_vm.confirmDelete = false}}},[_c('i',{staticClass:"ui trash icon"}),_vm._v(" "),(!_vm.confirmDelete)?_c('span',[_vm._v("delete")]):_vm._e(),_vm._v(" "),(_vm.confirmDelete)?_c('span',[_vm._v("are you sure?")]):_vm._e()]),_vm._v(" "),_c('a',{staticClass:"ui positive mini button",on:{"click":function($event){$event.preventDefault();return _vm.$emit('saving')}}},[_vm._v("save")])]):_vm._e()])}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -24717,7 +24717,7 @@ window.app = new Vue({
         .then((resp) => {
           self.ids = {};
           for (let i = 0; i < resp.rows.length; i++) {
-            self.ids[resp.rows[i].key] = { revs: [resp.rows[i].value.rev] };
+            self.ids[resp.rows[i].key] = resp.rows[i].value.rev;
           }
         });
     },
@@ -24758,8 +24758,7 @@ window.app = new Vue({
       db.put(self.doc)
         .then((resp) => {
           if (resp.ok) {
-            // TODO: not sure why revs is an array...
-            self.ids[resp.id].revs = [resp.rev];
+            self.ids[resp.id] = resp.rev;
           }
         });
       // TODO: handle errors and stuff

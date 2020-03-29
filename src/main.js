@@ -63,7 +63,7 @@ window.app = new Vue({
         .then((resp) => {
           self.ids = {};
           for (let i = 0; i < resp.rows.length; i++) {
-            self.ids[resp.rows[i].key] = { revs: [resp.rows[i].value.rev] };
+            self.ids[resp.rows[i].key] = resp.rows[i].value.rev;
           }
         });
     },
@@ -104,8 +104,7 @@ window.app = new Vue({
       db.put(self.doc)
         .then((resp) => {
           if (resp.ok) {
-            // TODO: not sure why revs is an array...
-            self.ids[resp.id].revs = [resp.rev];
+            self.ids[resp.id] = resp.rev;
           }
         });
       // TODO: handle errors and stuff

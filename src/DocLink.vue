@@ -2,8 +2,8 @@
 module.exports = {
   props: {
     id: String,
+    rev: String,
     current: Object,
-    item: Object
   },
   data() {
     return {
@@ -25,9 +25,8 @@ module.exports = {
       class="menu"
     >
       <a
-        v-for="rev in item.revs"
-        :key="rev"
         class="item"
+        style="white-space: nowrap"
       >{{ rev }}</a>
     </div>
     <div

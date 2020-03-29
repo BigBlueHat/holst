@@ -24585,6 +24585,36 @@ exports.parse = function (str) {
 },{}],19:[function(require,module,exports){
 ;(function(){
 
+const TreeField = require('./TreeField.vue');
+
+module.exports = {
+  props: {
+    value: Object,
+  },
+  components: {
+    TreeField
+  }
+};
+
+})()
+if (module.exports.__esModule) module.exports = module.exports.default
+var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
+if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('div',{staticClass:"ui form"},[_c('tree-field',{model:{value:(_vm.value),callback:function ($$v) {_vm.value=$$v},expression:"value"}})],1)])}
+__vue__options__.staticRenderFns = []
+if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-73faef72", __vue__options__)
+  } else {
+    hotAPI.reload("data-v-73faef72", __vue__options__)
+  }
+})()}
+},{"./TreeField.vue":23,"vue":16,"vue-hot-reload-api":14}],20:[function(require,module,exports){
+;(function(){
+
 module.exports = {
   props: {
     id: String,
@@ -24614,7 +24644,7 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
     hotAPI.reload("data-v-2196159d", __vue__options__)
   }
 })()}
-},{"vue":16,"vue-hot-reload-api":14}],20:[function(require,module,exports){
+},{"vue":16,"vue-hot-reload-api":14}],21:[function(require,module,exports){
 ;(function(){
 
 module.exports = {
@@ -24651,14 +24681,90 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
     hotAPI.reload("data-v-7034ff46", __vue__options__)
   }
 })()}
-},{"vue":16,"vue-hot-reload-api":14}],21:[function(require,module,exports){
+},{"vue":16,"vue-hot-reload-api":14}],22:[function(require,module,exports){
+;(function(){
+
+module.exports = {
+  props: ['value'],
+  methods: {
+    saving($event) {
+      try {
+        this.$emit('input', JSON.parse($event.target.value));
+      } catch (e) {
+        // ignore JSON.parse error...because it'll be happening constantly
+        // TODO: consider listening for a "save" event from parent instead
+      }
+    }
+  }
+};
+
+})()
+if (module.exports.__esModule) module.exports = module.exports.default
+var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
+if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('textarea',{domProps:{"value":typeof _vm.value === 'object' ? JSON.stringify(_vm.value, null, '  ') : _vm.value},on:{"input":_vm.saving}})}
+__vue__options__.staticRenderFns = []
+if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-66978b68", __vue__options__)
+  } else {
+    hotAPI.reload("data-v-66978b68", __vue__options__)
+  }
+})()}
+},{"vue":16,"vue-hot-reload-api":14}],23:[function(require,module,exports){
+;(function(){
+
+const TextareaEditor = require('./TextareaEditor.vue');
+
+module.exports = {
+  name: 'tree-field',
+  props: {
+    value: Object
+  },
+  data() {
+    return {
+      doc: this.value
+    };
+  },
+  computed: {
+    topLevelKeys() {
+      return Object.keys(this.value);
+    }
+  },
+  components: {
+    TextareaEditor
+  }
+};
+
+})()
+if (module.exports.__esModule) module.exports = module.exports.default
+var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
+if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ui basic segment",staticStyle:{"padding-top":"0","padding-bottom":"0"}},_vm._l((_vm.topLevelKeys),function(key){return _c('div',{key:key,staticClass:"field"},[_c('label',[_vm._v(_vm._s(key))]),_vm._v(" "),(typeof _vm.doc[key] === 'object')?_c('tree-field',{model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):(typeof _vm.doc[key] === 'string' && _vm.doc[key].search('\\n') > -1)?_c('textarea-editor',{model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.doc[key]),expression:"doc[key]"}],attrs:{"type":"text"},domProps:{"value":(_vm.doc[key])},on:{"input":function($event){if($event.target.composing){ return; }_vm.$set(_vm.doc, key, $event.target.value)}}})],1)}),0)}
+__vue__options__.staticRenderFns = []
+if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-11ab5af2", __vue__options__)
+  } else {
+    hotAPI.reload("data-v-11ab5af2", __vue__options__)
+  }
+})()}
+},{"./TextareaEditor.vue":22,"vue":16,"vue-hot-reload-api":14}],24:[function(require,module,exports){
 const PouchDB = require('pouchdb-browser');
 const Vue = require('vue');
 
 Vue.config.debug = true;
 
+const DesignDocEditor = require('./DesignDocEditor.vue');
 const DocLink = require('./DocLink.vue');
 const SyncModal = require('./SyncModal.vue');
+const TextareaEditor = require('./TextareaEditor.vue');
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -24671,25 +24777,10 @@ window.app = new Vue({
     }
   },
   components: {
+    DesignDocEditor,
     DocLink,
     SyncModal,
-    TextareaEditor: {
-      props: ['value'],
-      template: `<textarea
-        :value="JSON.stringify(value, null, '  ')"
-        @input="saving"
-      ></textarea>`,
-      methods: {
-        saving($event) {
-          try {
-            this.$emit('input', JSON.parse($event.target.value));
-          } catch (e) {
-            // ignore JSON.parse error...because it'll be happening constantly
-            // TODO: consider listening for a "save" event from parent instead
-          }
-        }
-      }
-    }
+    TextareaEditor
   },
   data: {
     new_doc_name: '',
@@ -24702,7 +24793,9 @@ window.app = new Vue({
   },
   computed: {
     docEditor() {
-      return 'TextareaEditor';
+      return this.doc._id.substr(0, 8) === '_design/'
+        ? 'DesignDocEditor'
+        : 'TextareaEditor';
     },
     editableDoc: {
       get() {
@@ -24816,4 +24909,4 @@ window.app = new Vue({
   }
 });
 
-},{"./DocLink.vue":19,"./SyncModal.vue":20,"pouchdb-browser":5,"vue":16}]},{},[21]);
+},{"./DesignDocEditor.vue":19,"./DocLink.vue":20,"./SyncModal.vue":21,"./TextareaEditor.vue":22,"pouchdb-browser":5,"vue":16}]},{},[24]);

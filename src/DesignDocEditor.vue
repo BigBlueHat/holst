@@ -1,25 +1,20 @@
 <script>
+const TreeField = require('./TreeField.vue');
+
 module.exports = {
   props: {
     value: Object,
   },
-  data() {
-  },
-  computed: {
-    topLevelKeys() {
-      return Object.keys(this.value);
-    }
+  components: {
+    TreeField
   }
 };
 </script>
 
 <template>
-  <ul>
-    <li
-      v-for="key in topLevelKeys"
-      :key="key"
-    >
-      {{ key }}
-    </li>
-  </ul>
+  <div>
+    <div class="ui form">
+      <tree-field v-model="value" />
+    </div>
+  </div>
 </template>

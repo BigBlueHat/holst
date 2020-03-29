@@ -3,8 +3,10 @@ const Vue = require('vue');
 
 Vue.config.debug = true;
 
+const DesignDocEditor = require('./DesignDocEditor.vue');
 const DocLink = require('./DocLink.vue');
 const SyncModal = require('./SyncModal.vue');
+const TextareaEditor = require('./TextareaEditor.vue');
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -17,25 +19,10 @@ window.app = new Vue({
     }
   },
   components: {
+    DesignDocEditor,
     DocLink,
     SyncModal,
-    TextareaEditor: {
-      props: ['value'],
-      template: `<textarea
-        :value="JSON.stringify(value, null, '  ')"
-        @input="saving"
-      ></textarea>`,
-      methods: {
-        saving($event) {
-          try {
-            this.$emit('input', JSON.parse($event.target.value));
-          } catch (e) {
-            // ignore JSON.parse error...because it'll be happening constantly
-            // TODO: consider listening for a "save" event from parent instead
-          }
-        }
-      }
-    }
+    TextareaEditor
   },
   data: {
     new_doc_name: '',
@@ -48,7 +35,9 @@ window.app = new Vue({
   },
   computed: {
     docEditor() {
-      return 'TextareaEditor';
+      return this.doc._id.substr(0, 8) === '_design/'
+        ? 'DesignDocEditor'
+        : 'TextareaEditor';
     },
     editableDoc: {
       get() {

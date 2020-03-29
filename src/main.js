@@ -5,8 +5,8 @@ Vue.config.debug = true;
 
 const DesignDocEditor = require('./DesignDocEditor.vue');
 const DocLink = require('./DocLink.vue');
+const JsonEditor = require('./JsonEditor.vue');
 const SyncModal = require('./SyncModal.vue');
-const TextareaEditor = require('./TextareaEditor.vue');
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -21,8 +21,8 @@ window.app = new Vue({
   components: {
     DesignDocEditor,
     DocLink,
-    SyncModal,
-    TextareaEditor
+    JsonEditor,
+    SyncModal
   },
   data: {
     new_doc_name: '',
@@ -37,7 +37,7 @@ window.app = new Vue({
     docEditor() {
       return this.doc._id.substr(0, 8) === '_design/'
         ? 'DesignDocEditor'
-        : 'TextareaEditor';
+        : 'JsonEditor';
     },
     editableDoc: {
       get() {

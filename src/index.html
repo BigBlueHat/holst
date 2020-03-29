@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
     <link rel="stylesheet" href="semantic/semantic.min.css" />
+    <link rel="stylesheet" href="codemirror/codemirror.css" />
     <link rel="stylesheet" href="app.css" />
   </head>
   <body class="pushable">
@@ -71,8 +72,8 @@
       </div>
       <div class="ui internally celled grid">
         <div class="stretched row">
-          <textarea id="editor" class="sixteen wide column"
-            v-model.lazy="jsonDoc"></textarea>
+          <codemirror id="editor" class="sixteen wide column"
+            v-model.lazy="jsonDoc" :options="codemirrorOptions"></codemirror>
         </div>
       </div>
     </div>
@@ -83,6 +84,9 @@
     </main>
 
     <!-- app -->
+    <script src="codemirror/codemirror.js"></script>
+    <script src="codemirror/javacript.js"></script>
+    <script src="codemirror/json-lint.js"></script>
     <script src="bundle.js"></script>
   </body>
 </html>

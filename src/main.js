@@ -1,10 +1,12 @@
 const PouchDB = require('pouchdb-browser');
 const Vue = require('vue');
 
-Vue.config.debug = true;
-
+const CodeMirror = require('vue-codemirror');
 const DocLink = require('./DocLink.vue');
 const SyncModal = require('./SyncModal.vue');
+
+Vue.config.debug = true;
+Vue.use(CodeMirror);
 
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
@@ -27,7 +29,10 @@ window.app = new Vue({
       _id: ''
     },
     ids: {},
-    showSyncForm: false
+    showSyncForm: false,
+    codemirrorOptions: {
+      mode: 'application/json'
+    }
   },
   computed: {
     jsonDoc: {

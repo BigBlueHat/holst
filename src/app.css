@@ -18,3 +18,6 @@
   background: #f6f6f6;
   border: none;
 }
+#editor .CodeMirror {
+  background: #f6f6f6;
+}

@@ -5,6 +5,11 @@ module.exports = {
   props: {
     value: Object,
   },
+  data() {
+    return {
+      doc: this.value
+    };
+  },
   components: {
     TreeField
   }
@@ -14,7 +19,7 @@ module.exports = {
 <template>
   <div>
     <div class="ui form">
-      <tree-field v-model="value" />
+      <tree-field v-model="doc" />
     </div>
   </div>
 </template>

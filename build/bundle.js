@@ -24591,6 +24591,11 @@ module.exports = {
   props: {
     value: Object,
   },
+  data() {
+    return {
+      doc: this.value
+    };
+  },
   components: {
     TreeField
   }
@@ -24600,7 +24605,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('div',{staticClass:"ui form"},[_c('tree-field',{model:{value:(_vm.value),callback:function ($$v) {_vm.value=$$v},expression:"value"}})],1)])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('div',{staticClass:"ui form"},[_c('tree-field',{model:{value:(_vm.doc),callback:function ($$v) {_vm.doc=$$v},expression:"doc"}})],1)])}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -24619,7 +24624,7 @@ module.exports = {
   props: {
     id: String,
     rev: String,
-    current: Object,
+    isCurrent: Boolean
   },
   data() {
     return {
@@ -24632,7 +24637,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"item",class:{ active: _vm.id === _vm.current._id },on:{"click":function($event){$event.preventDefault();return _vm.$emit('loading', _vm.id)}}},[_c('a',{attrs:{"href":_vm.id}},[_vm._v(_vm._s(_vm.id))]),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"menu"},[_c('a',{staticClass:"item",staticStyle:{"white-space":"nowrap"}},[_vm._v(_vm._s(_vm.rev))])]):_vm._e(),_vm._v(" "),(_vm.id === _vm.current._id)?_c('div',{staticClass:"ui right aligned container"},[_c('a',{staticClass:"ui basic negative icon mini button",attrs:{"href":_vm.id,"title":"delete this note"},on:{"click":function($event){$event.preventDefault();_vm.confirmDelete ? _vm.$emit('deleting', _vm.id) : _vm.confirmDelete = true},"blur":function($event){_vm.confirmDelete = false}}},[_c('i',{staticClass:"ui trash icon"}),_vm._v(" "),(!_vm.confirmDelete)?_c('span',[_vm._v("delete")]):_vm._e(),_vm._v(" "),(_vm.confirmDelete)?_c('span',[_vm._v("are you sure?")]):_vm._e()]),_vm._v(" "),_c('a',{staticClass:"ui positive mini button",on:{"click":function($event){$event.preventDefault();return _vm.$emit('saving')}}},[_vm._v("save")])]):_vm._e()])}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"item",class:{ active: _vm.isCurrent },on:{"click":function($event){$event.preventDefault();return _vm.$emit('loading', _vm.id)}}},[_c('a',{attrs:{"href":_vm.id}},[_vm._v(_vm._s(_vm.id))]),_vm._v(" "),(_vm.isCurrent)?_c('div',{staticClass:"menu"},[_c('a',{staticClass:"item",staticStyle:{"white-space":"nowrap"}},[_vm._v(_vm._s(_vm.rev))])]):_vm._e(),_vm._v(" "),(_vm.isCurrent)?_c('div',{staticClass:"ui right aligned container"},[_c('a',{staticClass:"ui basic negative icon mini button",attrs:{"href":_vm.id,"title":"delete this note"},on:{"click":function($event){$event.preventDefault();_vm.confirmDelete ? _vm.$emit('deleting', _vm.id) : _vm.confirmDelete = true},"blur":function($event){_vm.confirmDelete = false}}},[_c('i',{staticClass:"ui trash icon"}),_vm._v(" "),(!_vm.confirmDelete)?_c('span',[_vm._v("delete")]):_vm._e(),_vm._v(" "),(_vm.confirmDelete)?_c('span',[_vm._v("are you sure?")]):_vm._e()]),_vm._v(" "),_c('a',{staticClass:"ui positive mini button",on:{"click":function($event){$event.preventDefault();return _vm.$emit('saving')}}},[_vm._v("save")])]):_vm._e()])}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -24718,19 +24723,14 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
 ;(function(){
 
 module.exports = {
-  props: ['value'],
-  methods: {
-    saving($event) {
-      return $event.target.value;
-    }
-  }
+  props: ['value']
 };
 
 })()
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('textarea',{domProps:{"value":_vm.value},on:{"input":_vm.saving}})}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('textarea',{domProps:{"value":_vm.value},on:{"input":function($event){return _vm.$emit('saving', $event.target.value)}}})}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -24764,6 +24764,11 @@ module.exports = {
   },
   components: {
     TextareaEditor
+  },
+  methods: {
+    saveField(key, value) {
+      this.doc[key] = value;
+    }
   }
 };
 
@@ -24771,7 +24776,7 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ui basic segment",staticStyle:{"padding-top":"0","padding-bottom":"0"}},_vm._l((_vm.topLevelKeys),function(key){return _c('div',{key:key,staticClass:"field"},[_c('label',[_vm._v(_vm._s(key))]),_vm._v(" "),(typeof _vm.doc[key] === 'object')?_c('tree-field',{model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):(typeof _vm.doc[key] === 'string' && _vm.doc[key].search('\\n') > -1)?_c('textarea-editor',{model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.doc[key]),expression:"doc[key]"}],attrs:{"type":"text"},domProps:{"value":(_vm.doc[key])},on:{"input":function($event){if($event.target.composing){ return; }_vm.$set(_vm.doc, key, $event.target.value)}}})],1)}),0)}
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ui basic segment",staticStyle:{"padding-top":"0","padding-bottom":"0"}},_vm._l((_vm.topLevelKeys),function(key){return _c('div',{key:key,staticClass:"field"},[_c('label',[_vm._v(_vm._s(key))]),_vm._v(" "),(typeof _vm.doc[key] === 'object')?_c('tree-field',{model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):(typeof _vm.doc[key] === 'string' && _vm.doc[key].search('\\n') > -1)?_c('textarea-editor',{on:{"saving":function($event){return _vm.saveField(key, $event)}},model:{value:(_vm.doc[key]),callback:function ($$v) {_vm.$set(_vm.doc, key, $$v)},expression:"doc[key]"}}):_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.doc[key]),expression:"doc[key]"}],attrs:{"type":"text"},domProps:{"value":(_vm.doc[key])},on:{"input":function($event){if($event.target.composing){ return; }_vm.$set(_vm.doc, key, $event.target.value)}}})],1)}),0)}
 __vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -24813,34 +24818,28 @@ window.app = new Vue({
   data: {
     new_doc_name: '',
     url: '',
-    doc: {
-      _id: ''
-    },
+    doc_id: '',
+    doc_rev: '',
+    doc_attachments: {},
+    doc: {}, // the doc without the underscores
     ids: {},
     showSyncForm: false
   },
   computed: {
+    completeDoc() {
+      const underscores = { _id: this.doc_id };
+      if (this.doc_rev !== '') {
+        underscores._rev = this.doc_rev;
+      }
+      if (this.doc_attachments !== undefined && Object.keys(this.doc_attachments).length > 0) {
+        underscores._attachments = this.doc_attachments;
+      }
+      return Object.assign(this.doc, underscores);
+    },
     docEditor() {
-      return this.doc._id.substr(0, 8) === '_design/'
+      return this.doc_id.substr(0, 8) === '_design/'
         ? 'DesignDocEditor'
         : 'JsonEditor';
-    },
-    editableDoc: {
-      get() {
-        // TODO: consider making the app always work with a "cleaned" doc
-        const temp = JSON.parse(JSON.stringify(this.doc));
-        // remove _id/_rev as they are "locked"
-        delete temp._id;
-        delete temp._rev;
-        return temp;
-      },
-      set(value) {
-        const temp = value;
-        // put _id/_rev back
-        temp._id = this.doc._id;
-        temp._rev = this.doc._rev;
-        this.doc = temp;
-      }
     }
   },
   created() {
@@ -24865,11 +24864,9 @@ window.app = new Vue({
     newDoc() {
       const self = this;
       if (self.new_doc_name !== '') {
-        self.doc = {
-          _id: self.new_doc_name
-        };
+        self.doc_id = self.new_doc_name;
         // save the doc immediately
-        db.put(self.doc)
+        db.put(self.completeDoc)
           .then((resp) => {
             // store the _id & _rev, so we can PUT the update later
             self.doc = {
@@ -24890,27 +24887,39 @@ window.app = new Vue({
       const self = this;
       db.get(id)
         .then((doc) => {
-          self.doc = doc;
+          self.doc_id = doc._id;
+          self.doc_rev = doc._rev;
+          self.doc_attachments = doc._attachments;
+          const tempDoc = doc;
+          delete tempDoc._id;
+          delete tempDoc._rev;
+          delete tempDoc._attachments;
+          self.doc = tempDoc;
         });
     },
     saveDoc() {
       const self = this;
+      // TODO: probably should remove this auto-magic data thing
       self.doc.updated = (new Date()).toISOString();
-      db.put(self.doc)
+      db.put(self.completeDoc)
         .then((resp) => {
           if (resp.ok) {
             self.ids[resp.id] = resp.rev;
+            self.doc_rev = resp.rev;
           }
         });
       // TODO: handle errors and stuff
     },
     deleteDoc() {
-      db.remove(this.doc);
+      db.remove(this.completeDoc)
+        .then((resp) => {
+          if (resp.ok) {
+            this.doc_id = '';
+            this.doc_rev = '';
+            this.listDocs();
+          }
+        });
       // TODO: handle errors
-      this.doc = {
-        _id: ''
-      };
-      this.listDocs();
     },
     syncTo(opts) {
       const self = this;

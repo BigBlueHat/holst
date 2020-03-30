@@ -54,7 +54,7 @@
           :key="id"
           :id="id"
           :rev="rev"
-          :current="doc"
+          :is-current="id === doc_id"
           @deleting="deleteDoc"
           @loading="loadDoc"
           @saving="saveDoc"></doc-link>
@@ -64,8 +64,8 @@
       <div class="ui top attached fitted segment" style="margin-top: 0.5em">
         <table class="ui celled table" style="border: 0">
           <tr>
-            <td class="collapsing">{{ doc._id }}</td>
-            <td class="disabled">{{ doc._rev }}</td>
+            <td class="collapsing">{{ doc_id }}</td>
+            <td class="disabled">{{ doc_rev }}</td>
           </tr>
         </table>
       </div>
@@ -73,7 +73,7 @@
         <div class="stretched row">
           <component
             :is="docEditor"
-            v-model.lazy="editableDoc"
+            v-model="doc"
             id="editor" class="sixteen wide column"
           ></component>
         </div>

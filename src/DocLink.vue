@@ -3,7 +3,7 @@ module.exports = {
   props: {
     id: String,
     rev: String,
-    current: Object,
+    isCurrent: Boolean
   },
   data() {
     return {
@@ -16,12 +16,12 @@ module.exports = {
 <template>
   <div
     class="item"
-    :class="{ active: id === current._id }"
+    :class="{ active: isCurrent }"
     @click.prevent="$emit('loading', id)"
   >
     <a :href="id">{{ id }}</a>
     <div
-      v-if="id === current._id"
+      v-if="isCurrent"
       class="menu"
     >
       <a
@@ -30,7 +30,7 @@ module.exports = {
       >{{ rev }}</a>
     </div>
     <div
-      v-if="id === current._id"
+      v-if="isCurrent"
       class="ui right aligned container"
     >
       <a

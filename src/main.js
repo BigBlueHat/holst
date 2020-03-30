@@ -27,34 +27,28 @@ window.app = new Vue({
   data: {
     new_doc_name: '',
     url: '',
-    doc: {
-      _id: ''
-    },
+    doc_id: '',
+    doc_rev: '',
+    doc_attachments: {},
+    doc: {}, // the doc without the underscores
     ids: {},
     showSyncForm: false
   },
   computed: {
+    completeDoc() {
+      const underscores = { _id: this.doc_id };
+      if (this.doc_rev !== '') {
+        underscores._rev = this.doc_rev;
+      }
+      if (this.doc_attachments !== undefined && Object.keys(this.doc_attachments).length > 0) {
+        underscores._attachments = this.doc_attachments;
+      }
+      return Object.assign(this.doc, underscores);
+    },
     docEditor() {
-      return this.doc._id.substr(0, 8) === '_design/'
+      return this.doc_id.substr(0, 8) === '_design/'
         ? 'DesignDocEditor'
         : 'JsonEditor';
-    },
-    editableDoc: {
-      get() {
-        // TODO: consider making the app always work with a "cleaned" doc
-        const temp = JSON.parse(JSON.stringify(this.doc));
-        // remove _id/_rev as they are "locked"
-        delete temp._id;
-        delete temp._rev;
-        return temp;
-      },
-      set(value) {
-        const temp = value;
-        // put _id/_rev back
-        temp._id = this.doc._id;
-        temp._rev = this.doc._rev;
-        this.doc = temp;
-      }
     }
   },
   created() {
@@ -79,11 +73,9 @@ window.app = new Vue({
     newDoc() {
       const self = this;
       if (self.new_doc_name !== '') {
-        self.doc = {
-          _id: self.new_doc_name
-        };
+        self.doc_id = self.new_doc_name;
         // save the doc immediately
-        db.put(self.doc)
+        db.put(self.completeDoc)
           .then((resp) => {
             // store the _id & _rev, so we can PUT the update later
             self.doc = {
@@ -104,27 +96,39 @@ window.app = new Vue({
       const self = this;
       db.get(id)
         .then((doc) => {
-          self.doc = doc;
+          self.doc_id = doc._id;
+          self.doc_rev = doc._rev;
+          self.doc_attachments = doc._attachments;
+          const tempDoc = doc;
+          delete tempDoc._id;
+          delete tempDoc._rev;
+          delete tempDoc._attachments;
+          self.doc = tempDoc;
         });
     },
     saveDoc() {
       const self = this;
+      // TODO: probably should remove this auto-magic data thing
       self.doc.updated = (new Date()).toISOString();
-      db.put(self.doc)
+      db.put(self.completeDoc)
         .then((resp) => {
           if (resp.ok) {
             self.ids[resp.id] = resp.rev;
+            self.doc_rev = resp.rev;
           }
         });
       // TODO: handle errors and stuff
     },
     deleteDoc() {
-      db.remove(this.doc);
+      db.remove(this.completeDoc)
+        .then((resp) => {
+          if (resp.ok) {
+            this.doc_id = '';
+            this.doc_rev = '';
+            this.listDocs();
+          }
+        });
       // TODO: handle errors
-      this.doc = {
-        _id: ''
-      };
-      this.listDocs();
     },
     syncTo(opts) {
       const self = this;

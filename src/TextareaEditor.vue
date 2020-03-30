@@ -1,17 +1,12 @@
 <script>
 module.exports = {
-  props: ['value'],
-  methods: {
-    saving($event) {
-      return $event.target.value;
-    }
-  }
+  props: ['value']
 };
 </script>
 
 <template>
   <textarea
     :value="value"
-    @input="saving"
+    @input="$emit('saving', $event.target.value)"
   />
 </template>

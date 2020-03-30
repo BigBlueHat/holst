@@ -18,6 +18,11 @@ module.exports = {
   },
   components: {
     TextareaEditor
+  },
+  methods: {
+    saveField(key, value) {
+      this.doc[key] = value;
+    }
   }
 };
 </script>
@@ -40,6 +45,7 @@ module.exports = {
       <textarea-editor
         v-else-if="typeof doc[key] === 'string' && doc[key].search('\\n') > -1"
         v-model="doc[key]"
+        @saving="saveField(key, $event)"
       />
       <input
         v-else

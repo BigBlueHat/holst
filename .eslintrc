@@ -9,6 +9,6 @@
     "no-alert": "off",
     "no-console": ["error", { "allow": ["info", "warn", "error"] }],
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-    "no-underscore-dangle": ["error", { "allow": ["_id", "_rev"] }]
+    "no-underscore-dangle": ["error", { "allow": ["_id", "_rev", "_attachments"] }]
   }
 }

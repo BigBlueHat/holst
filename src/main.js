@@ -108,8 +108,6 @@ window.app = new Vue({
     },
     saveDoc() {
       const self = this;
-      // TODO: probably should remove this auto-magic data thing
-      self.doc.updated = (new Date()).toISOString();
       db.put(self.completeDoc)
         .then((resp) => {
           if (resp.ok) {

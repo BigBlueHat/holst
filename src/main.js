@@ -73,19 +73,19 @@ window.app = new Vue({
     newDoc() {
       const self = this;
       if (self.new_doc_name !== '') {
-        self.doc_id = self.new_doc_name;
         // save the doc immediately
-        db.put(self.completeDoc)
+        db.put({ _id: self.new_doc_name })
           .then((resp) => {
-            // store the _id & _rev, so we can PUT the update later
-            self.doc = {
-              _id: resp.id,
-              _rev: resp.rev
-            };
-            // reset the new doc value for future use
-            self.new_doc_name = '';
-            // reload the list of docs
-            self.listDocs();
+            if (resp.ok) {
+              // store the _id & _rev, so we can PUT the update later
+              self.doc_id = resp.id;
+              self.doc_rev = resp.rev;
+              self.doc = {};
+              // reset the new doc value for future use
+              self.new_doc_name = '';
+              // reload the list of docs
+              self.listDocs();
+            }
           }).catch(console.error.bind(console));
       } else {
         // TODO: um..yeah..error handling...

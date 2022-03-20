@@ -1,7 +1,9 @@
+/* globals PouchDB, CodeMirror */
+
 let db = new PouchDB('holst'); // !!! only temporary...changes to actual db
 window.db = db;
 
-function holst() {
+window.holst = () => {
   let cm = {}; // future CodeMirror instance
   return {
     new_doc_name: '',
@@ -20,7 +22,7 @@ function holst() {
       cm = CodeMirror.fromTextArea(this.$refs.codemirror, {
         matchBrackets: true,
         autoCloseBrackets: true,
-        mode: "application/ld+json",
+        mode: 'application/ld+json',
         lineWrapping: true
       });
       cm.setSize('100%', '100%');
@@ -118,38 +120,36 @@ function holst() {
       // TODO: handle errors
     }
   };
-}
+};
 
-function syncForm() {
-  return {
-    // ux
-    show: false,
-    // data
-    username: '',
-    password: '',
-    url: '',
-    // methods
-    sync() {
-      const self = this;
-      const auth = (this.username !== '' && this.password !== '')
-        ? {
-          auth: {
-            user: this.username,
-            password: this.password
-          }
+window.syncForm = () => ({
+  // ux
+  show: false,
+  // data
+  username: '',
+  password: '',
+  url: '',
+  // methods
+  sync() {
+    const self = this;
+    const auth = (this.username !== '' && this.password !== '')
+      ? {
+        auth: {
+          user: this.username,
+          password: this.password
         }
-        : {};
+      }
+      : {};
 
-      // TODO: maybe do some validation or something
-      const remote = new PouchDB(this.url, auth);
-      db.sync(remote)
-        .on('complete', (info) => {
-          console.info('sync info', info);
-          alert('woot!');
-          self.showSyncForm = false;
-          self.listDocs();
-        })
-        .on('error', console.error);
-    }
+    // TODO: maybe do some validation or something
+    const remote = new PouchDB(this.url, auth);
+    db.sync(remote)
+      .on('complete', (info) => {
+        console.info('sync info', info);
+        alert('woot!');
+        self.showSyncForm = false;
+        self.listDocs();
+      })
+      .on('error', console.error);
   }
-}
+});

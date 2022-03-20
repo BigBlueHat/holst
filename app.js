@@ -5,7 +5,7 @@ function holst() {
   let cm = {}; // future CodeMirror instance
   return {
     new_doc_name: '',
-    url: 'http://localhost:5984/holst',
+    url: '',
     doc_id: '',
     doc_rev: '',
     doc_attachments: {},

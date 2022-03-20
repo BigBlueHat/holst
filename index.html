@@ -1,1 +1,174 @@
-<meta http-equiv="refresh" content="0; build/index.html" />
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Holst</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <!-- fomantic-ui -->
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <script src="https://unpkg.com/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+    <!-- codemirror -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/codemirror@5.65.2/lib/codemirror.css">
+    <script src="https://unpkg.com/codemirror@5.65.2/lib/codemirror.js"></script>
+
+    <script src="https://unpkg.com/codemirror@5.65.2/addon/edit/matchbrackets.js"></script>
+    <script src="https://unpkg.com/codemirror@5.65.2/addon/comment/continuecomment.js"></script>
+    <script src="https://unpkg.com/codemirror@5.65.2/addon/comment/comment.js"></script>
+    <script src="https://unpkg.com/codemirror@5.65.2/mode/javascript/javascript.js"></script>
+    <!-- pouchdb -->
+    <script src="https://unpkg.com/pouchdb@7.2.2/dist/pouchdb.js"></script>
+    <!-- local app -->
+    <script src="app.js"></script>
+    <link rel="stylesheet" href="app.css" />
+    <!-- alpine.js -->
+    <script src="https://unpkg.com/alpinejs" defer></script>
+  </head>
+  <body>
+
+    <section id="app" x-data="holst()">
+
+      <header>
+        <div class="ui attached inverted menu">
+          <div class="item">Holst</div>
+          <div class="item">
+            <div class="ui mini input">
+              <input type="text" x-model="url" @keyup.enter="setDBUrl"
+                placeholder="http://localhost:5984/..." />
+            </div>
+          </div>
+
+          <div class="right menu">
+            <div class="item">
+              <!-- sync form toggle button -->
+              <div class="ui green icon button"
+                @click="$dispatch('sync')">
+                <i class="random icon"></i> Sync
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+
+      <nav class="ui left vertical visible menu" style="margin: 0; border-radius: 0">
+        <!-- document navigation -->
+          <div class="item">
+            <div class="ui transparent icon input">
+              <input placeholder="new doc name" type="text"
+                x-model="new_doc_name"
+                @keyup.enter="newDoc" />
+              <i class="plus link icon" @click="newDoc"></i>
+            </div>
+          </div>
+
+          <!--doc-link
+            v-for="(rev, id) in ids"
+            :key="id"
+            :id="id"
+            :rev="rev"
+            :is-current="id === doc_id"
+            @deleting="deleteDoc"
+            @loading="loadDoc"
+            @saving="saveDoc"></doc-link-->
+          <template x-for="(rev, id) in ids" :key="id">
+            <div class="item" :class="id === doc_id && 'active'" @click.prevent="loadDoc(id)">
+              <a :href="id" x-text="id"></a>
+              <div class="menu" x-show="id === doc_id">
+                <span class="item" style="white-space: nowrap" x-text="rev"></span>
+              </div>
+              <div class="ui container" x-show="id === doc_id">
+                <a :href="id" x-data="{ confirm: false }"
+                  @click.prevent="confirm ? deleteDoc() : confirm = true"
+                  @blur="confirm = false"
+                  class="ui basic negative icon mini button"
+                  title="delete this document"
+                  >
+                  <i class="ui trash icon"></i>
+                  <span x-show="confirm">are you sure?</span>
+                </a>
+                <a class="ui right floated positive mini button"
+                  @click.prevent="saveDoc()">save</a>
+              </div>
+            </div>
+          </template>
+      </nav>
+
+      <!-- main app content -->
+      <main>
+        <div class="info">
+          <div class="ui top attached fitted segment">
+            <table class="ui celled table" style="border: 0">
+              <tr>
+                <td class="collapsing" x-text="doc_id"></td>
+                <td class="disabled" x-text="doc_rev"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="content">
+          <textarea style="display: none" x-ref="codemirror" x-model.debounce.750ms="JSON.stringify(doc, null, 2)"></textarea>
+          <!--component
+            :is="docEditor"
+            v-model="doc"
+            id="editor" class="sixteen wide column"
+            ></component-->
+        </div>
+      </main>
+
+      <!-- sync form -->
+      <aside class="ui dimmer modals page transition"
+         x-data="syncForm()"
+         @sync.window="show = true"
+        :class="{ visible: show, active: show }">
+        <div class="ui small transition scrolling modal" :class="{ visible: show, active: show }">
+          <div class="content">
+            <div class="ui form">
+              <div class="fields">
+                <div class="four wide field">
+                  <label>Username</label>
+                  <input
+                    x-model="username"
+                    type="text"
+                    placeholder="username"
+                  >
+                </div>
+                <div class="four wide field">
+                  <label>Password</label>
+                  <input
+                    x-model="password"
+                    type="password"
+                    placeholder="password"
+                  >
+                </div>
+                <div class="eight wide field">
+                  <label>CouchDB or PouchDB URL</label>
+                  <div class="ui input">
+                    <input
+                      x-model="url"
+                      type="text"
+                      placeholder="https://example.com/database"
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <div class="ui cancel icon button"
+              @click="show = false">
+              <i class="close icon"></i> Cancel
+            </div>
+            <button class="ui positive icon button"
+              @click="sync()">
+              <i class="random icon"></i> Sync
+            </button>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </body>
+</html>

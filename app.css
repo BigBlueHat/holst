@@ -1,0 +1,64 @@
+/** huge thanks to https://mxb.dev/blog/css-grid-admin-dashboard/ **/
+
+#app {
+  display: flex;
+  flex-wrap: wrap;
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 70px 1fr;
+  grid-template-columns: 15em 1fr;
+  grid-template-areas: "header header" "nav main";
+
+/* footer stuff
+  grid-template-rows: 70px 1fr 70px;
+  grid-template-columns: 15em 1fr;
+  grid-template-areas: "header header" "nav    main" "footer footer";
+*/
+}
+header {
+  display: flex;
+  flex-basis: 100%;
+  grid-area: header;
+  height: 70px;
+  background-color: #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  position: relative;
+}
+nav {
+  flex: 0 0 250px;
+  grid-area: nav;
+  background-color: #313541;
+}
+main {
+  flex: 1;
+  grid-area: main;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background-color: #f4f7fa;
+  display: grid;
+  grid-template-rows: 44px 1fr;
+  grid-template-areas: "info" "content";
+}
+main > .info {
+  grid-area: info;
+}
+main > .content {
+  grid-area: content;
+}
+/*footer {
+  display: flex;
+  grid-area: footer;
+  flex-basis: 100%;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+  padding: 0 var(--spacing);
+  color: #4e5561;
+  background-color: #1d2127;
+}*/
+
+/** fomantic-ui overrides **/
+.menu .item {
+  cursor: pointer;
+}

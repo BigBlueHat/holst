@@ -1,46 +1,35 @@
 {
   "name": "holst",
-  "version": "0.0.0",
-  "description": "upHOLSTer Apache CouchDB",
+  "version": "0.2.0",
+  "description": "upHOLSTer Apache CouchDB and PouchDB",
   "main": "src/main.js",
   "scripts": {
     "styles": "cp -R node_modules/fomantic-ui-css/* build/semantic/.",
-    "build": "browserify -t vueify -e src/main.js -o build/bundle.js && cp src/*.html build/ && cp src/*.css build/",
-    "serve": "http-server build/",
+    "serve": "http-server .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/"
-  },
-  "browser": {
-    "vue": "vue/dist/vue.common.js"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/BigBlueHat/pillow-notes"
+    "url": "http://github.com/BigBlueHat/holst"
   },
   "keywords": [
-    "markdown",
     "couchdb",
     "pouchdb",
-    "vue.js"
+    "alpine.js"
   ],
   "author": "BigBlueHat <byoung@bigbluehat.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/BigBlueHat/pillow-notes/issues"
+    "url": "https://github.com/BigBlueHat/holst/issues"
   },
-  "homepage": "https://github.com/BigBlueHat/pillow-notes",
-  "dependencies": {
-    "pouchdb-browser": "^7.0.0",
-    "vue": "^2.5.0"
-  },
+  "homepage": "https://github.com/BigBlueHat/holst",
   "devDependencies": {
-    "browserify": "^16.5.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-vue": "^7.0.0-alpha.0",
     "fomantic-ui-css": "^2.8.4",
-    "http-server": "^0.12.1",
-    "vueify": "^9.4.1"
+    "http-server": "^0.12.1"
   }
 }
